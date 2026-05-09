@@ -35,6 +35,10 @@ class DeletedUserRepository extends BaseRepository {
 
         return this.applyReadOptions(query, options);
     }
+
+    markRestoredById(id) {
+        return this.updateOne({ _id: id, restored: false }, { restored: true });
+    }
 }
 
 export default new DeletedUserRepository();

@@ -111,6 +111,46 @@ class AuthService {
         return this.createAuthPayload(user);
     }
 
+    async restore(data = {}) {
+        const { emailOrUsername, password } = data;
+
+        this.validateRestoreData({ emailOrUsername, password });
+
+        const credential = normalizeUsername(emailOrUsername);
+        const deletedUser = isEmail(credential)
+            ? await deletedUserRepository.findRestorableByEmail(credential)
+            : await deletedUserRepository.findRestorableByUsername(credential);
+
+        if (!deletedUser) {
+            throw new AppError(
+                MESSAGES.AUTH.CREDENTIALS_INVALID,
+                HTTP_STATUS.UNAUTHORIZED,
+            );
+        }
+
+        const isPasswordValid = await bcrypt.compare(
+            password,
+            deletedUser.passwordHash,
+        );
+
+        if (!isPasswordValid) {
+            throw new AppError(
+                MESSAGES.AUTH.CREDENTIALS_INVALID,
+                HTTP_STATUS.UNAUTHORIZED,
+            );
+        }
+
+        await this.ensureRestoredUserIdentifiersAreAvailable(deletedUser);
+
+        const user = await userRepository.create(
+            this.createRestoredUserData(deletedUser),
+        );
+
+        await deletedUserRepository.markRestoredById(deletedUser._id);
+
+        return this.createAuthPayload(user);
+    }
+
     createAuthPayload(user) {
         return {
             user: this.toSafeUser(user),
@@ -123,6 +163,62 @@ class AuthService {
         const { passwordHash, __v, ...safeUser } = userObject;
 
         return safeUser;
+    }
+
+    async ensureRestoredUserIdentifiersAreAvailable(deletedUser) {
+        const existingUsername = await userRepository.findByUsername(
+            deletedUser.username,
+        );
+        if (existingUsername) {
+            throw new AppError(
+                MESSAGES.AUTH.USERNAME_IN_USE,
+                HTTP_STATUS.CONFLICT,
+            );
+        }
+
+        const existingEmail = await userRepository.findByEmail(
+            deletedUser.email,
+        );
+        if (existingEmail) {
+            throw new AppError(
+                MESSAGES.AUTH.EMAIL_IN_USE,
+                HTTP_STATUS.CONFLICT,
+            );
+        }
+    }
+
+    createRestoredUserData(deletedUser) {
+        const restoreData =
+            deletedUser.dataToRestore &&
+            typeof deletedUser.dataToRestore === 'object' &&
+            !Array.isArray(deletedUser.dataToRestore)
+                ? deletedUser.dataToRestore
+                : {};
+        const displayName =
+            typeof restoreData.displayName === 'string' &&
+            restoreData.displayName.trim()
+                ? restoreData.displayName.trim()
+                : deletedUser.username;
+
+        const restoredUserData = {
+            username: deletedUser.username,
+            displayName,
+            email: deletedUser.email,
+            passwordHash: deletedUser.passwordHash,
+            status: USER_STATUSES.ACTIVE,
+        };
+
+        for (const field of ['avatar', 'bio', 'locale']) {
+            if (typeof restoreData[field] === 'string') {
+                restoredUserData[field] = restoreData[field];
+            }
+        }
+
+        if (restoreData.theme) {
+            restoredUserData.theme = restoreData.theme;
+        }
+
+        return restoredUserData;
     }
 
     signToken(user) {
@@ -182,7 +278,7 @@ class AuthService {
         }
     }
 
-    validateLoginData(data) {
+    validateBasicData(data) {
         const { emailOrUsername, password } = data;
 
         if (
@@ -196,6 +292,14 @@ class AuthService {
                 HTTP_STATUS.BAD_REQUEST,
             );
         }
+    }
+
+    validateLoginData(data) {
+        this.validateBasicData(data);
+    }
+
+    validateRestoreData(data) {
+        this.validateBasicData(data);
     }
 }
 

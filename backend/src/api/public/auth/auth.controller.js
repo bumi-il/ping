@@ -12,6 +12,11 @@ class AuthController {
         const authPayload = await authService.login(req.body);
         return successResponse(res, HTTP_STATUS.OK, authPayload);
     };
+
+    restore = async (req, res) => {
+        const authPayload = await authService.restore(req.body);
+        return successResponse(res, HTTP_STATUS.CREATED, authPayload);
+    };
 }
 
 export default new AuthController();
