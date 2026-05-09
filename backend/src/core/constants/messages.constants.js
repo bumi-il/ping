@@ -9,6 +9,7 @@ const MESSAGES = {
         EMAIL_IN_USE: 'Email is already in use',
         REGISTER_FIELDS_REQUIRED:
             'Username, display name, email, and password are required',
+        EMAIL_INVALID: 'Email must be a valid email address',
         PASSWORD_MIN_LENGTH: (minLength) =>
             `Password must be at least ${minLength} characters`,
     },

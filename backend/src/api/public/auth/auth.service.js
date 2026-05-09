@@ -7,8 +7,9 @@ import userRepository from '#core/repositories/user.repository.js';
 import AppError from '#core/utils/AppError.utils.js';
 import {
     BCRYPT_SALT_ROUNDS,
+    EMAIL_PATTERN,
     PASSWORD_MIN_LENGTH,
-    TOKEN_EXPIRES_IN,
+    JWT_SIGN_OPTIONS,
 } from '#core/constants/auth.constants.js';
 import { USER_STATUSES } from '#core/constants/user.constants.js';
 
@@ -60,8 +61,7 @@ class AuthService {
 
         const credential = emailOrUsername.trim().toLowerCase();
 
-        // TODO: Add better email check
-        const user = credential.includes('@')
+        const user = EMAIL_PATTERN.test(credential)
             ? await userRepository.findByEmail(credential)
             : await userRepository.findByUsername(credential);
 
@@ -106,18 +106,12 @@ class AuthService {
     }
 
     signToken(user) {
-        // TODO: Move this to config
-        if (!env.JWT_SECRET) {
-            throw new AppError(
-                MESSAGES.AUTH.JWT_SECRET_MISSING,
-                HTTP_STATUS.INTERNAL_SERVER_ERROR,
-            );
-        }
-
-        // TODO: Check jwt params - https://www.npmjs.com/package/jsonwebtoken
-        return jwt.sign({ sub: user._id.toString() }, env.JWT_SECRET, {
-            expiresIn: TOKEN_EXPIRES_IN,
-        });
+        // TODO: Learn jwt params - https://www.npmjs.com/package/jsonwebtoken
+        return jwt.sign(
+            { sub: user._id.toString() },
+            env.JWT_SECRET,
+            JWT_SIGN_OPTIONS,
+        );
     }
 
     validateRegisterData(data) {
@@ -139,7 +133,12 @@ class AuthService {
             );
         }
 
-        // TODO: add email validation
+        if (!EMAIL_PATTERN.test(email.trim().toLowerCase())) {
+            throw new AppError(
+                MESSAGES.AUTH.EMAIL_INVALID,
+                HTTP_STATUS.BAD_REQUEST,
+            );
+        }
 
         if (password.length < PASSWORD_MIN_LENGTH) {
             throw new AppError(

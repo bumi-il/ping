@@ -26,7 +26,7 @@ const groupSchema = new Schema(
         theme: {
             type: Schema.Types.ObjectId,
             ref: 'Theme',
-            // TODO: Add default theme
+            default: null,
         },
 
         // Group members

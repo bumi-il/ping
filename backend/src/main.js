@@ -8,14 +8,17 @@ import {
 } from '#core/middlewares/errorHandler.middleware.js';
 import api from '#api/api.routes.js';
 import { connectDB } from '#config/db.config.js';
+import { NODE_ENVS } from '#core/constants/constants.js';
+
+const MORGAN_FORMAT = env.NODE_ENV === NODE_ENVS.PROD ? 'combined' : 'dev';
 
 const createApp = () => {
     const app = express();
 
     app.use(express.json());
     app.use(cors({ origin: env.CLIENT_ORIGIN }));
-    // TODO: Check morgan params - https://www.npmjs.com/package/morgan
-    app.use(morgan('dev'));
+    // TODO: Learn morgan params - https://www.npmjs.com/package/morgan
+    app.use(morgan(MORGAN_FORMAT));
 
     app.use('/api', api);
 

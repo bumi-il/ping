@@ -27,6 +27,12 @@ const groupMemberSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'User',
         },
+
+        // Preferences
+        notifications: {
+            type: Boolean,
+            default: true,
+        },
     },
     {
         timestamps: true,

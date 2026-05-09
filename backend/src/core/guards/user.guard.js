@@ -17,14 +17,6 @@ const checkUser = async (req, _res, next) => {
         );
     }
 
-    // TODO: Move this to config
-    if (!env.JWT_SECRET) {
-        throw new AppError(
-            MESSAGES.AUTH.JWT_SECRET_MISSING,
-            HTTP_STATUS.INTERNAL_SERVER_ERROR,
-        );
-    }
-
     const token = authorizationHeader.split(' ')[1];
     if (typeof token !== 'string' || !token.trim()) {
         throw new AppError(

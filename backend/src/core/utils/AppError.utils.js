@@ -4,9 +4,9 @@ class AppError extends Error {
         this.name = 'AppError';
         this.code = code;
         this.status = String(code).startsWith('4') ? 'fail' : 'error';
-        // TODO: Check this line
+        // TODO: Learn this line
         this.isOperational = true;
-        // TODO: Check this line
+        // TODO: Learn this line
         Error.captureStackTrace(this, this.constructor);
     }
 }
