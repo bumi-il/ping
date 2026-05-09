@@ -5,6 +5,7 @@ import { HTTP_STATUS } from '#core/constants/httpStatus.constants.js';
 import { MESSAGES } from '#core/constants/messages.constants.js';
 import deletedUserRepository from '#core/repositories/deletedUser.repository.js';
 import userRepository from '#core/repositories/user.repository.js';
+import emailService from '#core/services/email/email.service.js';
 import AppError from '#core/utils/AppError.utils.js';
 import {
     BCRYPT_SALT_ROUNDS,
@@ -33,14 +34,11 @@ class AuthService {
                 HTTP_STATUS.CONFLICT,
             );
         }
-
-        // TODO: Check if username is in deleted users & the account was deleted in the last { X } days
         const deletedUsername =
             await deletedUserRepository.findRestorableByUsername(
                 normalizedUsername,
             );
         if (deletedUsername) {
-            // TODO: Send the user a question if he wants to restore data
             this.throwDeletedUserRestoreAction('username');
         }
 
@@ -52,11 +50,9 @@ class AuthService {
                 HTTP_STATUS.CONFLICT,
             );
         }
-        // TODO: Check if email is in deleted users & the account was deleted in the last { X } days
         const deletedEmail =
             await deletedUserRepository.findRestorableByEmail(normalizedEmail);
         if (deletedEmail) {
-            // TODO: Send the user a question if he wants to restore data
             this.throwDeletedUserRestoreAction('email');
         }
 
@@ -70,6 +66,13 @@ class AuthService {
             email: normalizedEmail,
             passwordHash,
         });
+
+        await this.sendEmailSafely(() =>
+            emailService.sendWelcomeEmail({
+                to: user.email,
+                displayName: user.displayName,
+            }),
+        );
 
         return this.createAuthPayload(user);
     }
@@ -148,6 +151,13 @@ class AuthService {
 
         await deletedUserRepository.markRestoredById(deletedUser._id);
 
+        await this.sendEmailSafely(() =>
+            emailService.sendAccountRestoredEmail({
+                to: user.email,
+                displayName: user.displayName,
+            }),
+        );
+
         return this.createAuthPayload(user);
     }
 
@@ -219,6 +229,14 @@ class AuthService {
         }
 
         return restoredUserData;
+    }
+
+    async sendEmailSafely(sendEmail) {
+        try {
+            await sendEmail();
+        } catch (error) {
+            console.error('Email failed to send', error);
+        }
     }
 
     signToken(user) {
