@@ -6,6 +6,8 @@ It’s designed for one thing:
 
 > Turning a quick thought into coordinated action — instantly.
 
+---
+
 > [!NOTE]
 > 🚧 **Work in progress.**  
 > Ping is being actively built and refined — expect things to change.
