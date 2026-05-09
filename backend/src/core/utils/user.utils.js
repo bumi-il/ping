@@ -1,5 +1,5 @@
-const getUserSession = (req) => {
+const getUser = (req) => {
     return req.user;
 };
 
-export { getUserSession };
+export { getUser };

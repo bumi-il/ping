@@ -1,5 +1,9 @@
-const getGroupSession = (req) => {
+const getGroup = (req) => {
     return req.group;
 };
 
-export { getGroupSession };
+const getGroupMember = (req) => {
+    return req.groupMember;
+};
+
+export { getGroup, getGroupMember };

@@ -1,8 +1,15 @@
 import { errorResponse } from '../utils/response.utils.js';
 import AppError from '../utils/AppError.utils.js';
+import { HTTP_STATUS } from '../constants/httpStatus.constants.js';
+import { MESSAGES } from '../constants/messages.constants.js';
 
 const notFoundHandler = (req, _res, next) => {
-    next(new AppError(`Route ${req.originalUrl} was not found`, 404));
+    next(
+        new AppError(
+            MESSAGES.ROUTE.NOT_FOUND(req.originalUrl),
+            HTTP_STATUS.NOT_FOUND,
+        ),
+    );
 };
 
 const errorHandler = (error, _req, res, _next) => {
@@ -10,7 +17,11 @@ const errorHandler = (error, _req, res, _next) => {
         return errorResponse(res, error.code, error.message);
     }
 
-    return errorResponse(res, 500, error.message);
+    return errorResponse(
+        res,
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        MESSAGES.SERVER.INTERNAL_ERROR,
+    );
 };
 
 export { notFoundHandler, errorHandler };

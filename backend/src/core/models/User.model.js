@@ -2,7 +2,7 @@ import { model, Schema } from 'mongoose';
 
 const userSchema = new Schema(
     {
-        // Basic information
+        // Basic required information
         username: {
             type: String,
             required: true,
@@ -23,6 +23,8 @@ const userSchema = new Schema(
             required: true,
             trim: true,
         },
+
+        // Additional information
         avatar: {
             type: String,
             default: '',
@@ -46,6 +48,12 @@ const userSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'Theme',
             // TODO: Add default theme
+        },
+
+        // Platform information
+        isPlatformAdmin: {
+            type: Boolean,
+            default: false,
         },
     },
     {

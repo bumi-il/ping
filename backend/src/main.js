@@ -6,7 +6,7 @@ import {
     errorHandler,
     notFoundHandler,
 } from './core/middlewares/errorHandler.middleware.js';
-import api from './api/index.js';
+import api from './api/api.routes.js';
 import { connectDB } from './config/db.config.js';
 
 const createApp = () => {
