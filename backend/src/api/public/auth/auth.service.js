@@ -3,15 +3,20 @@ import jwt from 'jsonwebtoken';
 import { env } from '#config/env.config.js';
 import { HTTP_STATUS } from '#core/constants/httpStatus.constants.js';
 import { MESSAGES } from '#core/constants/messages.constants.js';
+import deletedUserRepository from '#core/repositories/deletedUser.repository.js';
 import userRepository from '#core/repositories/user.repository.js';
 import AppError from '#core/utils/AppError.utils.js';
 import {
     BCRYPT_SALT_ROUNDS,
-    EMAIL_PATTERN,
     PASSWORD_MIN_LENGTH,
     JWT_SIGN_OPTIONS,
 } from '#core/constants/auth.constants.js';
 import { USER_STATUSES } from '#core/constants/user.constants.js';
+import {
+    isEmail,
+    normalizeEmail,
+    normalizeUsername,
+} from '#core/utils/user.utils.js';
 
 class AuthService {
     async register(data = {}) {
@@ -19,7 +24,7 @@ class AuthService {
 
         this.validateRegisterData({ username, displayName, email, password });
 
-        const normalizedUsername = username.trim().toLowerCase();
+        const normalizedUsername = normalizeUsername(username);
         const existingUsername =
             await userRepository.findByUsername(normalizedUsername);
         if (existingUsername) {
@@ -28,9 +33,19 @@ class AuthService {
                 HTTP_STATUS.CONFLICT,
             );
         }
-        // TODO: Check if username is in deleted users
 
-        const normalizedEmail = email.trim().toLowerCase();
+        // TODO: Check if username is in deleted users & the account was deleted in the last { X } days
+        const deletedUsername =
+            await deletedUserRepository.findByUsername(normalizedUsername);
+        if (deletedUsername) {
+            // TODO: Send the user a question if he wants to restore data
+            throw new AppError(
+                MESSAGES.AUTH.USERNAME_IN_USE,
+                HTTP_STATUS.CONFLICT,
+            );
+        }
+
+        const normalizedEmail = normalizeEmail(email);
         const existingEmail = await userRepository.findByEmail(normalizedEmail);
         if (existingEmail) {
             throw new AppError(
@@ -38,7 +53,16 @@ class AuthService {
                 HTTP_STATUS.CONFLICT,
             );
         }
-        // TODO: Check if email is in deleted users
+        // TODO: Check if email is in deleted users & the account was deleted in the last { X } days
+        const deletedEmail =
+            await deletedUserRepository.findByEmail(normalizedEmail);
+        if (deletedEmail) {
+            // TODO: Send the user a question if he wants to restore data
+            throw new AppError(
+                MESSAGES.AUTH.EMAIL_IN_USE,
+                HTTP_STATUS.CONFLICT,
+            );
+        }
 
         const normalizedDisplayName = displayName.trim();
 
@@ -59,9 +83,9 @@ class AuthService {
 
         this.validateLoginData({ emailOrUsername, password });
 
-        const credential = emailOrUsername.trim().toLowerCase();
+        const credential = normalizeUsername(emailOrUsername);
 
-        const user = EMAIL_PATTERN.test(credential)
+        const user = isEmail(credential)
             ? await userRepository.findByEmail(credential)
             : await userRepository.findByUsername(credential);
 
@@ -133,7 +157,7 @@ class AuthService {
             );
         }
 
-        if (!EMAIL_PATTERN.test(email.trim().toLowerCase())) {
+        if (!isEmail(email)) {
             throw new AppError(
                 MESSAGES.AUTH.EMAIL_INVALID,
                 HTTP_STATUS.BAD_REQUEST,
