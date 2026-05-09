@@ -1,4 +1,4 @@
-import { GroupInvite } from '../models/GroupInvite.model.js';
+import { GroupInvite } from '#core/models/GroupInvite.model.js';
 import BaseRepository from './base.repository.js';
 
 class GroupInviteRepository extends BaseRepository {

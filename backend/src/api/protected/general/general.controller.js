@@ -1,5 +1,5 @@
-import { HTTP_STATUS } from '../../../core/constants/httpStatus.constants.js';
-import { successResponse } from '../../../core/utils/response.utils.js';
+import { HTTP_STATUS } from '#core/constants/httpStatus.constants.js';
+import { successResponse } from '#core/utils/response.utils.js';
 import generalService from './general.service.js';
 
 class GeneralController {

@@ -2,6 +2,11 @@
     "name": "backend",
     "version": "1.0.0",
     "type": "module",
+    "imports": {
+        "#api/*": "./src/api/*",
+        "#config/*": "./src/config/*",
+        "#core/*": "./src/core/*"
+    },
     "description": "",
     "keywords": [],
     "author": "",

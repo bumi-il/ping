@@ -1,11 +1,11 @@
 import jwt from 'jsonwebtoken';
-import { env } from '../../config/env.config.js';
-import { HTTP_STATUS } from '../constants/httpStatus.constants.js';
-import { MESSAGES } from '../constants/messages.constants.js';
-import userRepository from '../repositories/user.repository.js';
-import AppError from '../utils/AppError.utils.js';
-import { isObjectId } from '../utils/mongoose.utils.js';
-import { USER_STATUSES } from '../constants/user.constants.js';
+import { env } from '#config/env.config.js';
+import { HTTP_STATUS } from '#core/constants/httpStatus.constants.js';
+import { MESSAGES } from '#core/constants/messages.constants.js';
+import { USER_STATUSES } from '#core/constants/user.constants.js';
+import userRepository from '#core/repositories/user.repository.js';
+import AppError from '#core/utils/AppError.utils.js';
+import { isObjectId } from '#core/utils/mongoose.utils.js';
 
 const checkUser = async (req, _res, next) => {
     const authorizationHeader = req.headers.authorization;

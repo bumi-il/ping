@@ -1,16 +1,16 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { env } from '../../../config/env.config.js';
-import { HTTP_STATUS } from '../../../core/constants/httpStatus.constants.js';
-import { MESSAGES } from '../../../core/constants/messages.constants.js';
-import userRepository from '../../../core/repositories/user.repository.js';
-import AppError from '../../../core/utils/AppError.utils.js';
+import { env } from '#config/env.config.js';
+import { HTTP_STATUS } from '#core/constants/httpStatus.constants.js';
+import { MESSAGES } from '#core/constants/messages.constants.js';
+import userRepository from '#core/repositories/user.repository.js';
+import AppError from '#core/utils/AppError.utils.js';
 import {
     BCRYPT_SALT_ROUNDS,
     PASSWORD_MIN_LENGTH,
     TOKEN_EXPIRES_IN,
-} from '../../../core/constants/auth.constants.js';
-import { USER_STATUSES } from '../../../core/constants/user.constants.js';
+} from '#core/constants/auth.constants.js';
+import { USER_STATUSES } from '#core/constants/user.constants.js';
 
 class AuthService {
     async register(data = {}) {

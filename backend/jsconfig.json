@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "paths": {
+            "#api/*": ["./src/api/*"],
+            "#config/*": ["./src/config/*"],
+            "#core/*": ["./src/core/*"]
+        }
+    }
+}

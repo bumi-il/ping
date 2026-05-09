@@ -1,6 +1,6 @@
-import { HTTP_STATUS } from '../constants/httpStatus.constants.js';
-import { MESSAGES } from '../constants/messages.constants.js';
-import AppError from '../utils/AppError.utils.js';
+import { HTTP_STATUS } from '#core/constants/httpStatus.constants.js';
+import { MESSAGES } from '#core/constants/messages.constants.js';
+import AppError from '#core/utils/AppError.utils.js';
 
 const checkPlatformAdmin = (req, _res, next) => {
     if (!req.user.isPlatformAdmin) {

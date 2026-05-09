@@ -1,4 +1,4 @@
-import { getGroup, getGroupMember } from '../../../core/utils/group.utils.js';
+import { getGroup, getGroupMember } from '#core/utils/group.utils.js';
 
 class GroupService {
     getCurrent(req) {

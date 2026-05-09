@@ -1,4 +1,4 @@
-import { Notification } from '../models/Notification.model.js';
+import { Notification } from '#core/models/Notification.model.js';
 import BaseRepository from './base.repository.js';
 
 class NotificationRepository extends BaseRepository {

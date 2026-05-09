@@ -1,4 +1,4 @@
-import { getUser } from '../../../core/utils/user.utils.js';
+import { getUser } from '#core/utils/user.utils.js';
 
 class AdminService {
     getMe(req) {

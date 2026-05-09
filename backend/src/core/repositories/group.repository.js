@@ -1,4 +1,4 @@
-import { Group } from '../models/Group.model.js';
+import { Group } from '#core/models/Group.model.js';
 import BaseRepository from './base.repository.js';
 
 class GroupRepository extends BaseRepository {

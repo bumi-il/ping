@@ -1,4 +1,4 @@
-import { Theme } from '../models/Theme.model.js';
+import { Theme } from '#core/models/Theme.model.js';
 import BaseRepository from './base.repository.js';
 
 class ThemeRepository extends BaseRepository {

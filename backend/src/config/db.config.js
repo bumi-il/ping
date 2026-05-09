@@ -1,5 +1,5 @@
 import { connect, disconnect } from 'mongoose';
-import { env } from './env.config.js';
+import { env } from '#config/env.config.js';
 
 const connectDB = async () => {
     await connect(env.MONGO_URI);
