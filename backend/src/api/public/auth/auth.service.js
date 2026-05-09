@@ -36,13 +36,12 @@ class AuthService {
 
         // TODO: Check if username is in deleted users & the account was deleted in the last { X } days
         const deletedUsername =
-            await deletedUserRepository.findByUsername(normalizedUsername);
+            await deletedUserRepository.findRestorableByUsername(
+                normalizedUsername,
+            );
         if (deletedUsername) {
             // TODO: Send the user a question if he wants to restore data
-            throw new AppError(
-                MESSAGES.AUTH.USERNAME_IN_USE,
-                HTTP_STATUS.CONFLICT,
-            );
+            this.throwDeletedUserRestoreAction('username');
         }
 
         const normalizedEmail = normalizeEmail(email);
@@ -55,13 +54,10 @@ class AuthService {
         }
         // TODO: Check if email is in deleted users & the account was deleted in the last { X } days
         const deletedEmail =
-            await deletedUserRepository.findByEmail(normalizedEmail);
+            await deletedUserRepository.findRestorableByEmail(normalizedEmail);
         if (deletedEmail) {
             // TODO: Send the user a question if he wants to restore data
-            throw new AppError(
-                MESSAGES.AUTH.EMAIL_IN_USE,
-                HTTP_STATUS.CONFLICT,
-            );
+            this.throwDeletedUserRestoreAction('email');
         }
 
         const normalizedDisplayName = displayName.trim();
@@ -135,6 +131,20 @@ class AuthService {
             { sub: user._id.toString() },
             env.JWT_SECRET,
             JWT_SIGN_OPTIONS,
+        );
+    }
+
+    throwDeletedUserRestoreAction(matchedBy) {
+        throw new AppError(
+            MESSAGES.AUTH.DELETED_USER_RESTORE_AVAILABLE,
+            HTTP_STATUS.CONFLICT,
+            {
+                action: {
+                    type: 'restore_deleted_user',
+                    question: MESSAGES.AUTH.DELETED_USER_RESTORE_QUESTION,
+                    matchedBy,
+                },
+            },
         );
     }
 

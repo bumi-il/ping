@@ -1,6 +1,7 @@
 const PASSWORD_MIN_LENGTH = 6;
 const TOKEN_EXPIRES_IN = '7d';
 const BCRYPT_SALT_ROUNDS = 12;
+const DELETED_USER_TTL = 30 * 24 * 60 * 60 * 1000;
 const JWT_SIGN_OPTIONS = {
     expiresIn: TOKEN_EXPIRES_IN,
 };
@@ -9,5 +10,6 @@ export {
     PASSWORD_MIN_LENGTH,
     TOKEN_EXPIRES_IN,
     BCRYPT_SALT_ROUNDS,
+    DELETED_USER_TTL,
     JWT_SIGN_OPTIONS,
 };

@@ -9,6 +9,9 @@ const MESSAGES = {
         EMAIL_IN_USE: 'Email is already in use',
         REGISTER_FIELDS_REQUIRED:
             'Username, display name, email, and password are required',
+        DELETED_USER_RESTORE_AVAILABLE: 'This account was recently deleted',
+        DELETED_USER_RESTORE_QUESTION:
+            'Do you want to restore your previous account?',
         EMAIL_INVALID: 'Email must be a valid email address',
         PASSWORD_MIN_LENGTH: (minLength) =>
             `Password must be at least ${minLength} characters`,

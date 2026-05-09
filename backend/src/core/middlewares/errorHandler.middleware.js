@@ -14,7 +14,7 @@ const notFoundHandler = (req, _res, next) => {
 
 const errorHandler = (error, _req, res, _next) => {
     if (error instanceof AppError) {
-        return errorResponse(res, error.code, error.message);
+        return errorResponse(res, error.code, error.message, error.details);
     }
 
     return errorResponse(
