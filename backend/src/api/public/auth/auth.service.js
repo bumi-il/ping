@@ -1,5 +1,4 @@
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { env } from '#config/env.config.js';
 import { HTTP_STATUS } from '#core/constants/httpStatus.constants.js';
@@ -9,16 +8,18 @@ import deletedUserRepository from '#core/repositories/deletedUser.repository.js'
 import userRepository from '#core/repositories/user.repository.js';
 import emailService from '#core/services/email/email.service.js';
 import AppError from '#core/utils/AppError.utils.js';
+import { createRandomToken, hashToken } from '#core/utils/crypto.utils.js';
+import { createClientUrl } from '#core/utils/url.utils.js';
 import {
     AUTH_TOKEN_TYPES,
     BCRYPT_SALT_ROUNDS,
     EMAIL_VERIFICATION_TOKEN_TTL,
-    PASSWORD_MIN_LENGTH,
     PASSWORD_RESET_TOKEN_TTL,
     JWT_SIGN_OPTIONS,
-    VERIFICATION_EMAIL_API_URL,
     VERIFICATION_EMAIL_CLIENT_URL,
     RESET_PASSWORD_CLIENT_URL,
+    EMAIL_VERIFIED_CLIENT_URL,
+    EMAIL_VERIFIED_CLIENT_URL_PARAMS,
 } from '#core/constants/auth.constants.js';
 import { USER_STATUSES } from '#core/constants/user.constants.js';
 import {
@@ -26,12 +27,18 @@ import {
     normalizeEmail,
     normalizeUsername,
 } from '#core/utils/user.utils.js';
+import authValidates from './auth.validates.js';
 
 class AuthService {
     async register(data = {}) {
         const { username, displayName, email, password } = data;
 
-        this.validateRegisterData({ username, displayName, email, password });
+        authValidates.validateRegisterData({
+            username,
+            displayName,
+            email,
+            password,
+        });
 
         const normalizedUsername = normalizeUsername(username);
         const existingUsername =
@@ -83,7 +90,7 @@ class AuthService {
     async login(data = {}) {
         const { emailOrUsername, password } = data;
 
-        this.validateLoginData({ emailOrUsername, password });
+        authValidates.validateLoginData({ emailOrUsername, password });
 
         const credential = normalizeUsername(emailOrUsername);
 
@@ -127,7 +134,7 @@ class AuthService {
     async restore(data = {}) {
         const { emailOrUsername, password } = data;
 
-        this.validateRestoreData({ emailOrUsername, password });
+        authValidates.validateRestoreData({ emailOrUsername, password });
 
         const credential = normalizeUsername(emailOrUsername);
         const deletedUser = isEmail(credential)
@@ -174,7 +181,7 @@ class AuthService {
     async verifyEmail(data = {}) {
         const { token } = data;
 
-        this.validateTokenData({ token });
+        authValidates.validateTokenData({ token });
 
         const authToken = await this.findUsableAuthToken(
             token,
@@ -201,15 +208,16 @@ class AuthService {
 
         await authTokenRepository.markUsedById(authToken._id);
 
-        return this.createClientUrl('/email-verified', {
-            status: 'success',
-        });
+        return createClientUrl(
+            EMAIL_VERIFIED_CLIENT_URL,
+            EMAIL_VERIFIED_CLIENT_URL_PARAMS,
+        );
     }
 
     async resendVerification(data = {}) {
         const { email } = data;
 
-        this.validateEmailData({ email });
+        authValidates.validateEmailData({ email });
 
         const user = await userRepository.findByEmail(normalizeEmail(email));
         if (
@@ -226,7 +234,7 @@ class AuthService {
     async forgotPassword(data = {}) {
         const { email } = data;
 
-        this.validateEmailData({ email });
+        authValidates.validateEmailData({ email });
 
         const user = await userRepository.findByEmail(normalizeEmail(email));
         if (
@@ -244,17 +252,17 @@ class AuthService {
     async openPasswordReset(data = {}) {
         const { token } = data;
 
-        this.validateTokenData({ token });
+        authValidates.validateTokenData({ token });
 
         await this.findUsableAuthToken(token, AUTH_TOKEN_TYPES.PASSWORD_RESET);
 
-        return this.createClientUrl('/reset-password', { token });
+        return createClientUrl('/reset-password', { token });
     }
 
     async resetPassword(data = {}) {
         const { token, password } = data;
 
-        this.validateResetPasswordData({ token, password });
+        authValidates.validateResetPasswordData({ token, password });
 
         const authToken = await this.findUsableAuthToken(
             token,
@@ -307,12 +315,9 @@ class AuthService {
             ttl: EMAIL_VERIFICATION_TOKEN_TTL,
         });
 
-        const verificationUrl = this.createClientUrl(
-            VERIFICATION_EMAIL_CLIENT_URL,
-            {
-                token,
-            },
-        );
+        const verificationUrl = createClientUrl(VERIFICATION_EMAIL_CLIENT_URL, {
+            token,
+        });
 
         await this.sendEmailSafely(() =>
             emailService.sendVerifyEmail({
@@ -335,7 +340,7 @@ class AuthService {
             ttl: PASSWORD_RESET_TOKEN_TTL,
         });
 
-        const resetUrl = this.createClientUrl(RESET_PASSWORD_CLIENT_URL, {
+        const resetUrl = createClientUrl(RESET_PASSWORD_CLIENT_URL, {
             token,
         });
 
@@ -349,12 +354,12 @@ class AuthService {
     }
 
     async createAuthToken({ user, type, ttl }) {
-        const token = crypto.randomBytes(32).toString('hex');
+        const token = createRandomToken();
 
         await authTokenRepository.create({
             user,
             type,
-            tokenHash: this.hashToken(token),
+            tokenHash: hashToken(token),
             expiresAt: new Date(Date.now() + ttl),
         });
 
@@ -363,7 +368,7 @@ class AuthService {
 
     async findUsableAuthToken(token, type) {
         const authToken = await authTokenRepository.findUsableToken({
-            tokenHash: this.hashToken(token),
+            tokenHash: hashToken(token),
             type,
         });
 
@@ -375,28 +380,6 @@ class AuthService {
         }
 
         return authToken;
-    }
-
-    hashToken(token) {
-        return crypto.createHash('sha256').update(token).digest('hex');
-    }
-
-    createApiUrl(path, params = {}) {
-        return this.createUrl(env.API_ORIGIN, path, params);
-    }
-
-    createClientUrl(path, params = {}) {
-        return this.createUrl(env.CLIENT_ORIGIN, path, params);
-    }
-
-    createUrl(origin, path, params = {}) {
-        const url = new URL(path, origin);
-
-        Object.entries(params).forEach(([key, value]) => {
-            url.searchParams.set(key, value);
-        });
-
-        return url.toString();
     }
 
     toSafeUser(user) {
@@ -492,116 +475,6 @@ class AuthService {
                 },
             },
         );
-    }
-
-    validateRegisterData(data) {
-        const { username, displayName, email, password } = data;
-
-        if (
-            typeof username !== 'string' ||
-            !username.trim() ||
-            typeof displayName !== 'string' ||
-            !displayName.trim() ||
-            typeof email !== 'string' ||
-            !email.trim() ||
-            typeof password !== 'string' ||
-            !password.trim()
-        ) {
-            throw new AppError(
-                MESSAGES.AUTH.REGISTER_FIELDS_REQUIRED,
-                HTTP_STATUS.BAD_REQUEST,
-            );
-        }
-
-        if (!isEmail(email)) {
-            throw new AppError(
-                MESSAGES.AUTH.EMAIL_INVALID,
-                HTTP_STATUS.BAD_REQUEST,
-            );
-        }
-
-        if (password.length < PASSWORD_MIN_LENGTH) {
-            throw new AppError(
-                MESSAGES.AUTH.PASSWORD_MIN_LENGTH(PASSWORD_MIN_LENGTH),
-                HTTP_STATUS.BAD_REQUEST,
-            );
-        }
-    }
-
-    validateBasicData(data) {
-        const { emailOrUsername, password } = data;
-
-        if (
-            typeof emailOrUsername !== 'string' ||
-            !emailOrUsername.trim() ||
-            typeof password !== 'string' ||
-            !password.trim()
-        ) {
-            throw new AppError(
-                MESSAGES.AUTH.CREDENTIALS_REQUIRED,
-                HTTP_STATUS.BAD_REQUEST,
-            );
-        }
-    }
-
-    validateLoginData(data) {
-        this.validateBasicData(data);
-    }
-
-    validateRestoreData(data) {
-        this.validateBasicData(data);
-    }
-
-    validateEmailData(data) {
-        const { email } = data;
-
-        if (typeof email !== 'string' || !email.trim()) {
-            throw new AppError(
-                MESSAGES.AUTH.EMAIL_REQUIRED,
-                HTTP_STATUS.BAD_REQUEST,
-            );
-        }
-
-        if (!isEmail(email)) {
-            throw new AppError(
-                MESSAGES.AUTH.EMAIL_INVALID,
-                HTTP_STATUS.BAD_REQUEST,
-            );
-        }
-    }
-
-    validateTokenData(data) {
-        const { token } = data;
-
-        if (typeof token !== 'string' || !token.trim()) {
-            throw new AppError(
-                MESSAGES.AUTH.TOKEN_QUERY_REQUIRED,
-                HTTP_STATUS.BAD_REQUEST,
-            );
-        }
-    }
-
-    validateResetPasswordData(data) {
-        const { token, password } = data;
-
-        if (
-            typeof token !== 'string' ||
-            !token.trim() ||
-            typeof password !== 'string' ||
-            !password.trim()
-        ) {
-            throw new AppError(
-                MESSAGES.AUTH.RESET_FIELDS_REQUIRED,
-                HTTP_STATUS.BAD_REQUEST,
-            );
-        }
-
-        if (password.length < PASSWORD_MIN_LENGTH) {
-            throw new AppError(
-                MESSAGES.AUTH.PASSWORD_MIN_LENGTH(PASSWORD_MIN_LENGTH),
-                HTTP_STATUS.BAD_REQUEST,
-            );
-        }
     }
 }
 

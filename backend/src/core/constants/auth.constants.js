@@ -9,6 +9,10 @@ const JWT_SIGN_OPTIONS = {
 };
 const VERIFICATION_EMAIL_CLIENT_URL = '/verify-email';
 const RESET_PASSWORD_CLIENT_URL = '/reset-password';
+const EMAIL_VERIFIED_CLIENT_URL = '/email-verified';
+const EMAIL_VERIFIED_CLIENT_URL_PARAMS = {
+    status: 'success',
+};
 
 const AUTH_TOKEN_TYPES = {
     EMAIL_VERIFICATION: 'email_verification',
@@ -16,6 +20,8 @@ const AUTH_TOKEN_TYPES = {
 };
 
 export {
+    EMAIL_VERIFIED_CLIENT_URL,
+    EMAIL_VERIFIED_CLIENT_URL_PARAMS,
     RESET_PASSWORD_CLIENT_URL,
     VERIFICATION_EMAIL_CLIENT_URL,
     PASSWORD_MIN_LENGTH,
