@@ -248,17 +248,6 @@ class AuthService {
         return { message: MESSAGES.AUTH.PASSWORD_RESET_SENT };
     }
 
-    // TODO: This function is probably not needed
-    async openPasswordReset(data = {}) {
-        const { token } = data;
-
-        authValidates.validateTokenData({ token });
-
-        await this.findUsableAuthToken(token, AUTH_TOKEN_TYPES.PASSWORD_RESET);
-
-        return createClientUrl('/reset-password', { token });
-    }
-
     async resetPassword(data = {}) {
         const { token, password } = data;
 

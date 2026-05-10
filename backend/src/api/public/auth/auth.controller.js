@@ -36,11 +36,6 @@ class AuthController {
         return successResponse(res, HTTP_STATUS.OK, result);
     };
 
-    openPasswordReset = async (req, res) => {
-        const redirectUrl = await authService.openPasswordReset(req.query);
-        return redirectResponse(res, redirectUrl);
-    };
-
     resetPassword = async (req, res) => {
         const result = await authService.resetPassword(req.body);
         return successResponse(res, HTTP_STATUS.OK, result);
