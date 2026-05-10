@@ -103,6 +103,38 @@ const emailTemplates = {
         });
     },
 
+    verifyEmail({ displayName, verificationUrl } = {}) {
+        const name = displayName || 'there';
+
+        return createTemplate({
+            subject: 'Verify your Ping email',
+            title: 'Verify your email',
+            body: [
+                `Hi ${name},`,
+                'Confirm this email address to finish setting up your Ping account.',
+                'This link expires in 24 hours.',
+            ],
+            buttonLabel: 'Verify email',
+            buttonUrl: verificationUrl,
+        });
+    },
+
+    passwordReset({ displayName, resetUrl } = {}) {
+        const name = displayName || 'there';
+
+        return createTemplate({
+            subject: 'Reset your Ping password',
+            title: 'Reset your password',
+            body: [
+                `Hi ${name},`,
+                'Use the link below to choose a new password for your Ping account.',
+                'This link expires in 1 hour. If you did not request this, you can ignore this email.',
+            ],
+            buttonLabel: 'Reset password',
+            buttonUrl: resetUrl,
+        });
+    },
+
     restoreAvailable({ displayName, restoreUrl } = {}) {
         const name = displayName || 'there';
 

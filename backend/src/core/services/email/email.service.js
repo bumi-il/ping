@@ -34,6 +34,20 @@ const sendAccountRestoredEmail = ({ to, displayName }) => {
     });
 };
 
+const sendVerifyEmail = ({ to, displayName, verificationUrl }) => {
+    return sendTemplateEmail({
+        to,
+        template: emailTemplates.verifyEmail({ displayName, verificationUrl }),
+    });
+};
+
+const sendPasswordResetEmail = ({ to, displayName, resetUrl }) => {
+    return sendTemplateEmail({
+        to,
+        template: emailTemplates.passwordReset({ displayName, resetUrl }),
+    });
+};
+
 const sendRestoreAvailableEmail = ({ to, displayName, restoreUrl }) => {
     return sendTemplateEmail({
         to,
@@ -83,6 +97,8 @@ const emailService = {
     sendEmail,
     sendWelcomeEmail,
     sendAccountRestoredEmail,
+    sendVerifyEmail,
+    sendPasswordResetEmail,
     sendRestoreAvailableEmail,
     sendGroupInviteEmail,
     sendGroupRoleUpdatedEmail,

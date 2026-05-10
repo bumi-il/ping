@@ -6,6 +6,7 @@ const env = {
     PORT: process.env.PORT,
     NODE_ENV: process.env.NODE_ENV,
     CLIENT_ORIGIN: process.env.CLIENT_ORIGIN,
+    API_ORIGIN: process.env.API_ORIGIN,
 
     JWT_SECRET: process.env.JWT_SECRET,
 

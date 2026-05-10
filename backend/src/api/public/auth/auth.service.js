@@ -1,16 +1,24 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { env } from '#config/env.config.js';
 import { HTTP_STATUS } from '#core/constants/httpStatus.constants.js';
 import { MESSAGES } from '#core/constants/messages.constants.js';
+import authTokenRepository from '#core/repositories/authToken.repository.js';
 import deletedUserRepository from '#core/repositories/deletedUser.repository.js';
 import userRepository from '#core/repositories/user.repository.js';
 import emailService from '#core/services/email/email.service.js';
 import AppError from '#core/utils/AppError.utils.js';
 import {
+    AUTH_TOKEN_TYPES,
     BCRYPT_SALT_ROUNDS,
+    EMAIL_VERIFICATION_TOKEN_TTL,
     PASSWORD_MIN_LENGTH,
+    PASSWORD_RESET_TOKEN_TTL,
     JWT_SIGN_OPTIONS,
+    VERIFICATION_EMAIL_API_URL,
+    VERIFICATION_EMAIL_CLIENT_URL,
+    RESET_PASSWORD_CLIENT_URL,
 } from '#core/constants/auth.constants.js';
 import { USER_STATUSES } from '#core/constants/user.constants.js';
 import {
@@ -67,14 +75,9 @@ class AuthService {
             passwordHash,
         });
 
-        await this.sendEmailSafely(() =>
-            emailService.sendWelcomeEmail({
-                to: user.email,
-                displayName: user.displayName,
-            }),
-        );
+        await this.sendVerificationEmail(user);
 
-        return this.createAuthPayload(user);
+        return this.createVerificationRequiredPayload(user);
     }
 
     async login(data = {}) {
@@ -97,6 +100,13 @@ class AuthService {
 
         if (user.status !== USER_STATUSES.ACTIVE) {
             throw new AppError(MESSAGES.USER.DISABLED, HTTP_STATUS.FORBIDDEN);
+        }
+
+        if (!user.emailVerifiedAt) {
+            throw new AppError(
+                MESSAGES.AUTH.EMAIL_VERIFICATION_REQUIRED,
+                HTTP_STATUS.FORBIDDEN,
+            );
         }
 
         const isPasswordValid = await bcrypt.compare(
@@ -161,11 +171,232 @@ class AuthService {
         return this.createAuthPayload(user);
     }
 
+    async verifyEmail(data = {}) {
+        const { token } = data;
+
+        this.validateTokenData({ token });
+
+        const authToken = await this.findUsableAuthToken(
+            token,
+            AUTH_TOKEN_TYPES.EMAIL_VERIFICATION,
+        );
+
+        const user = await userRepository.findById(authToken.user);
+        if (!user) {
+            throw new AppError(MESSAGES.USER.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+        }
+
+        if (!user.emailVerifiedAt) {
+            await userRepository.updateById(user._id, {
+                emailVerifiedAt: new Date(),
+            });
+
+            await this.sendEmailSafely(() =>
+                emailService.sendWelcomeEmail({
+                    to: user.email,
+                    displayName: user.displayName,
+                }),
+            );
+        }
+
+        await authTokenRepository.markUsedById(authToken._id);
+
+        return this.createClientUrl('/email-verified', {
+            status: 'success',
+        });
+    }
+
+    async resendVerification(data = {}) {
+        const { email } = data;
+
+        this.validateEmailData({ email });
+
+        const user = await userRepository.findByEmail(normalizeEmail(email));
+        if (
+            user &&
+            !user.emailVerifiedAt &&
+            user.status === USER_STATUSES.ACTIVE
+        ) {
+            await this.sendVerificationEmail(user);
+        }
+
+        return { message: MESSAGES.AUTH.EMAIL_VERIFICATION_SENT };
+    }
+
+    async forgotPassword(data = {}) {
+        const { email } = data;
+
+        this.validateEmailData({ email });
+
+        const user = await userRepository.findByEmail(normalizeEmail(email));
+        if (
+            user &&
+            user.emailVerifiedAt &&
+            user.status === USER_STATUSES.ACTIVE
+        ) {
+            await this.sendPasswordResetEmail(user);
+        }
+
+        return { message: MESSAGES.AUTH.PASSWORD_RESET_SENT };
+    }
+
+    // TODO: This function is probably not needed
+    async openPasswordReset(data = {}) {
+        const { token } = data;
+
+        this.validateTokenData({ token });
+
+        await this.findUsableAuthToken(token, AUTH_TOKEN_TYPES.PASSWORD_RESET);
+
+        return this.createClientUrl('/reset-password', { token });
+    }
+
+    async resetPassword(data = {}) {
+        const { token, password } = data;
+
+        this.validateResetPasswordData({ token, password });
+
+        const authToken = await this.findUsableAuthToken(
+            token,
+            AUTH_TOKEN_TYPES.PASSWORD_RESET,
+        );
+
+        const user = await userRepository.findById(authToken.user);
+        if (!user) {
+            throw new AppError(MESSAGES.USER.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+        }
+
+        if (user.status !== USER_STATUSES.ACTIVE || !user.emailVerifiedAt) {
+            throw new AppError(
+                MESSAGES.AUTH.AUTH_TOKEN_INVALID,
+                HTTP_STATUS.BAD_REQUEST,
+            );
+        }
+
+        const passwordHash = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+
+        await userRepository.updateById(user._id, { passwordHash });
+        await authTokenRepository.markUsedById(authToken._id);
+
+        return { message: MESSAGES.AUTH.PASSWORD_RESET_SUCCESS };
+    }
+
     createAuthPayload(user) {
         return {
             user: this.toSafeUser(user),
             token: this.signToken(user),
         };
+    }
+
+    createVerificationRequiredPayload(user) {
+        return {
+            user: this.toSafeUser(user),
+            message: MESSAGES.AUTH.EMAIL_VERIFICATION_REQUIRED,
+        };
+    }
+
+    async sendVerificationEmail(user) {
+        await authTokenRepository.invalidateUnusedForUser({
+            user: user._id,
+            type: AUTH_TOKEN_TYPES.EMAIL_VERIFICATION,
+        });
+
+        const token = await this.createAuthToken({
+            user: user._id,
+            type: AUTH_TOKEN_TYPES.EMAIL_VERIFICATION,
+            ttl: EMAIL_VERIFICATION_TOKEN_TTL,
+        });
+
+        const verificationUrl = this.createClientUrl(
+            VERIFICATION_EMAIL_CLIENT_URL,
+            {
+                token,
+            },
+        );
+
+        await this.sendEmailSafely(() =>
+            emailService.sendVerifyEmail({
+                to: user.email,
+                displayName: user.displayName,
+                verificationUrl,
+            }),
+        );
+    }
+
+    async sendPasswordResetEmail(user) {
+        await authTokenRepository.invalidateUnusedForUser({
+            user: user._id,
+            type: AUTH_TOKEN_TYPES.PASSWORD_RESET,
+        });
+
+        const token = await this.createAuthToken({
+            user: user._id,
+            type: AUTH_TOKEN_TYPES.PASSWORD_RESET,
+            ttl: PASSWORD_RESET_TOKEN_TTL,
+        });
+
+        const resetUrl = this.createClientUrl(RESET_PASSWORD_CLIENT_URL, {
+            token,
+        });
+
+        await this.sendEmailSafely(() =>
+            emailService.sendPasswordResetEmail({
+                to: user.email,
+                displayName: user.displayName,
+                resetUrl,
+            }),
+        );
+    }
+
+    async createAuthToken({ user, type, ttl }) {
+        const token = crypto.randomBytes(32).toString('hex');
+
+        await authTokenRepository.create({
+            user,
+            type,
+            tokenHash: this.hashToken(token),
+            expiresAt: new Date(Date.now() + ttl),
+        });
+
+        return token;
+    }
+
+    async findUsableAuthToken(token, type) {
+        const authToken = await authTokenRepository.findUsableToken({
+            tokenHash: this.hashToken(token),
+            type,
+        });
+
+        if (!authToken) {
+            throw new AppError(
+                MESSAGES.AUTH.AUTH_TOKEN_INVALID,
+                HTTP_STATUS.BAD_REQUEST,
+            );
+        }
+
+        return authToken;
+    }
+
+    hashToken(token) {
+        return crypto.createHash('sha256').update(token).digest('hex');
+    }
+
+    createApiUrl(path, params = {}) {
+        return this.createUrl(env.API_ORIGIN, path, params);
+    }
+
+    createClientUrl(path, params = {}) {
+        return this.createUrl(env.CLIENT_ORIGIN, path, params);
+    }
+
+    createUrl(origin, path, params = {}) {
+        const url = new URL(path, origin);
+
+        Object.entries(params).forEach(([key, value]) => {
+            url.searchParams.set(key, value);
+        });
+
+        return url.toString();
     }
 
     toSafeUser(user) {
@@ -216,6 +447,7 @@ class AuthService {
             email: deletedUser.email,
             passwordHash: deletedUser.passwordHash,
             status: USER_STATUSES.ACTIVE,
+            emailVerifiedAt: new Date(),
         };
 
         for (const field of ['avatar', 'bio', 'locale']) {
@@ -318,6 +550,58 @@ class AuthService {
 
     validateRestoreData(data) {
         this.validateBasicData(data);
+    }
+
+    validateEmailData(data) {
+        const { email } = data;
+
+        if (typeof email !== 'string' || !email.trim()) {
+            throw new AppError(
+                MESSAGES.AUTH.EMAIL_REQUIRED,
+                HTTP_STATUS.BAD_REQUEST,
+            );
+        }
+
+        if (!isEmail(email)) {
+            throw new AppError(
+                MESSAGES.AUTH.EMAIL_INVALID,
+                HTTP_STATUS.BAD_REQUEST,
+            );
+        }
+    }
+
+    validateTokenData(data) {
+        const { token } = data;
+
+        if (typeof token !== 'string' || !token.trim()) {
+            throw new AppError(
+                MESSAGES.AUTH.TOKEN_QUERY_REQUIRED,
+                HTTP_STATUS.BAD_REQUEST,
+            );
+        }
+    }
+
+    validateResetPasswordData(data) {
+        const { token, password } = data;
+
+        if (
+            typeof token !== 'string' ||
+            !token.trim() ||
+            typeof password !== 'string' ||
+            !password.trim()
+        ) {
+            throw new AppError(
+                MESSAGES.AUTH.RESET_FIELDS_REQUIRED,
+                HTTP_STATUS.BAD_REQUEST,
+            );
+        }
+
+        if (password.length < PASSWORD_MIN_LENGTH) {
+            throw new AppError(
+                MESSAGES.AUTH.PASSWORD_MIN_LENGTH(PASSWORD_MIN_LENGTH),
+                HTTP_STATUS.BAD_REQUEST,
+            );
+        }
     }
 }
 

@@ -6,4 +6,8 @@ const errorResponse = (res, status, message, details = {}) => {
     return res.status(status).json({ success: false, message, ...details });
 };
 
-export { successResponse, errorResponse };
+const redirectResponse = (res, url) => {
+    return res.redirect(url);
+};
+
+export { successResponse, errorResponse, redirectResponse };

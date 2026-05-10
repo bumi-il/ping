@@ -9,6 +9,16 @@ const MESSAGES = {
         EMAIL_IN_USE: 'Email is already in use',
         REGISTER_FIELDS_REQUIRED:
             'Username, display name, email, and password are required',
+        EMAIL_REQUIRED: 'Email is required',
+        TOKEN_QUERY_REQUIRED: 'Token is required',
+        RESET_FIELDS_REQUIRED: 'Token and password are required',
+        EMAIL_VERIFICATION_REQUIRED: 'Email verification is required',
+        EMAIL_VERIFICATION_SENT:
+            'If this email needs verification, a verification link has been sent',
+        PASSWORD_RESET_SENT:
+            'If an account exists for this email, a password reset link has been sent',
+        PASSWORD_RESET_SUCCESS: 'Password reset successfully',
+        AUTH_TOKEN_INVALID: 'Invalid or expired token',
         DELETED_USER_RESTORE_AVAILABLE: 'This account was recently deleted',
         DELETED_USER_RESTORE_QUESTION:
             'Do you want to restore your previous account?',

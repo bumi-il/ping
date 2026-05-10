@@ -38,6 +38,10 @@ const userSchema = new Schema(
             enum: ['active', 'disabled'],
             default: 'active',
         },
+        emailVerifiedAt: {
+            type: Date,
+            default: null,
+        },
 
         // Preferences
         locale: {
