@@ -1,12 +1,14 @@
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
+import { createServer } from 'http';
 import { env } from '#config/env.config.js';
 import { errorHandler, notFoundHandler } from '#core/middlewares/errorHandler.middleware.js';
 import api from '#api/api.routes.js';
 import { connectDB } from '#config/db.config.js';
 import { NODE_ENVS } from '#core/constants/constants.js';
 import logService from '#core/services/log/log.service.js';
+import { initializeWebSocket } from '#config/websocket.config.js';
 
 const MORGAN_FORMAT = env.NODE_ENV === NODE_ENVS.PROD ? 'combined' : 'dev';
 
@@ -30,8 +32,11 @@ const start = async () => {
     await connectDB();
 
     const app = createApp();
+    const server = createServer(app);
 
-    app.listen(env.PORT, () => {
+    initializeWebSocket(server);
+
+    server.listen(env.PORT, () => {
         console.log(`Server is running on port ${env.PORT}`);
     });
 };
