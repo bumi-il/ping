@@ -9,6 +9,7 @@ import {
 import api from '#api/api.routes.js';
 import { connectDB } from '#config/db.config.js';
 import { NODE_ENVS } from '#core/constants/constants.js';
+import logService from '#core/services/log/log.service.js';
 
 const MORGAN_FORMAT = env.NODE_ENV === NODE_ENVS.PROD ? 'combined' : 'dev';
 
@@ -20,7 +21,7 @@ const createApp = () => {
     // TODO: Learn morgan params - https://www.npmjs.com/package/morgan
     app.use(morgan(MORGAN_FORMAT));
 
-    app.use('/api', api);
+    app.use('/api', logService.requestLogger(), api);
 
     app.use(notFoundHandler);
     app.use(errorHandler);

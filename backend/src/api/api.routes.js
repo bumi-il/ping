@@ -4,7 +4,7 @@ import publicRouter from './public/public.routes.js';
 
 const api = Router();
 
-api.use(publicRouter);
-api.use(protectedRouter);
+api.use('/public', publicRouter);
+api.use('/protected', protectedRouter);
 
 export default api;

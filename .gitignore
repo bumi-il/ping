@@ -1,4 +1,6 @@
 .env
 *.log
+*.cmd
+*.bat
 node_modules/
 private/
