@@ -33,7 +33,7 @@ class GroupMemberRepository extends BaseRepository {
                 role: { $in: ['owner', 'admin'] },
                 status: 'active',
             },
-            options,
+            options
         );
     }
 }

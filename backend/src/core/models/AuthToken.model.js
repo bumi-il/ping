@@ -30,7 +30,7 @@ const authTokenSchema = new Schema(
     },
     {
         timestamps: true,
-    },
+    }
 );
 
 authTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // TODO: What is expireAfterSeconds

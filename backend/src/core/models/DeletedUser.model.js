@@ -38,7 +38,7 @@ const deletedUserSchema = new Schema(
     {
         timestamps: true,
         collection: 'deleted_user',
-    },
+    }
 );
 
 deletedUserSchema.pre('save', async function blockRestoredDocumentChanges() {
@@ -46,10 +46,7 @@ deletedUserSchema.pre('save', async function blockRestoredDocumentChanges() {
         return;
     }
 
-    const existingDeletedUser = await this.constructor
-        .findById(this._id)
-        .select('restored')
-        .lean();
+    const existingDeletedUser = await this.constructor.findById(this._id).select('restored').lean();
 
     if (existingDeletedUser?.restored) {
         throw new Error('Restored deleted user documents are immutable');
@@ -67,7 +64,7 @@ deletedUserSchema.pre(
         if (restoredDeletedUserCount > 0) {
             throw new Error('Restored deleted user documents are immutable');
         }
-    },
+    }
 );
 
 deletedUserSchema.index({ deletedAt: 1 });

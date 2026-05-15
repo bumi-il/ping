@@ -14,7 +14,7 @@ class AuthTokenRepository extends BaseRepository {
                 usedAt: null,
                 expiresAt: { $gt: new Date() },
             },
-            options,
+            options
         );
     }
 
@@ -31,7 +31,7 @@ class AuthTokenRepository extends BaseRepository {
             },
             {
                 $set: { usedAt: new Date() },
-            },
+            }
         );
     }
 }

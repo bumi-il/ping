@@ -4,10 +4,7 @@ import AppError from '#core/utils/AppError.utils.js';
 
 const checkPlatformAdmin = (req, _res, next) => {
     if (!req.user.isPlatformAdmin) {
-        throw new AppError(
-            MESSAGES.ADMIN.ACCESS_REQUIRED,
-            HTTP_STATUS.FORBIDDEN,
-        );
+        throw new AppError(MESSAGES.ADMIN.ACCESS_REQUIRED, HTTP_STATUS.FORBIDDEN);
     }
 
     next();

@@ -7,7 +7,7 @@ const notificationSchema = new Schema(
     {
         timestamps: true,
         collection: 'user_group_notification',
-    },
+    }
 );
 
 export const Notification = model('Notification', notificationSchema);

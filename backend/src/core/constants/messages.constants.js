@@ -7,8 +7,7 @@ const MESSAGES = {
         JWT_SECRET_MISSING: 'JWT secret is not configured',
         USERNAME_IN_USE: 'Username is already in use',
         EMAIL_IN_USE: 'Email is already in use',
-        REGISTER_FIELDS_REQUIRED:
-            'Username, display name, email, and password are required',
+        REGISTER_FIELDS_REQUIRED: 'Username, display name, email, and password are required',
         EMAIL_REQUIRED: 'Email is required',
         TOKEN_QUERY_REQUIRED: 'Token is required',
         RESET_FIELDS_REQUIRED: 'Token and password are required',
@@ -20,11 +19,9 @@ const MESSAGES = {
         PASSWORD_RESET_SUCCESS: 'Password reset successfully',
         AUTH_TOKEN_INVALID: 'Invalid or expired token',
         DELETED_USER_RESTORE_AVAILABLE: 'This account was recently deleted',
-        DELETED_USER_RESTORE_QUESTION:
-            'Do you want to restore your previous account?',
+        DELETED_USER_RESTORE_QUESTION: 'Do you want to restore your previous account?',
         EMAIL_INVALID: 'Email must be a valid email address',
-        PASSWORD_MIN_LENGTH: (minLength) =>
-            `Password must be at least ${minLength} characters`,
+        PASSWORD_MIN_LENGTH: (minLength) => `Password must be at least ${minLength} characters`,
     },
     USER: {
         NOT_FOUND: 'User not found',

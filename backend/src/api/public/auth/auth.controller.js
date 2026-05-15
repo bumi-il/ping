@@ -1,8 +1,5 @@
 import { HTTP_STATUS } from '#core/constants/httpStatus.constants.js';
-import {
-    redirectResponse,
-    successResponse,
-} from '#core/utils/response.utils.js';
+import { redirectResponse, successResponse } from '#core/utils/response.utils.js';
 import authService from './auth.service.js';
 
 class AuthController {

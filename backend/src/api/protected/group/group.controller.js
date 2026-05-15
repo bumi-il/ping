@@ -4,11 +4,7 @@ import groupService from './group.service.js';
 
 class GroupController {
     getCurrent = (req, res) => {
-        return successResponse(
-            res,
-            HTTP_STATUS.OK,
-            groupService.getCurrent(req),
-        );
+        return successResponse(res, HTTP_STATUS.OK, groupService.getCurrent(req));
     };
 }
 

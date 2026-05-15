@@ -11,18 +11,12 @@ const checkUser = async (req, _res, next) => {
     const authorizationHeader = req.headers.authorization;
 
     if (!authorizationHeader?.startsWith('Bearer ')) {
-        throw new AppError(
-            MESSAGES.AUTH.TOKEN_REQUIRED,
-            HTTP_STATUS.UNAUTHORIZED,
-        );
+        throw new AppError(MESSAGES.AUTH.TOKEN_REQUIRED, HTTP_STATUS.UNAUTHORIZED);
     }
 
     const token = authorizationHeader.split(' ')[1];
     if (typeof token !== 'string' || !token.trim()) {
-        throw new AppError(
-            MESSAGES.AUTH.TOKEN_REQUIRED,
-            HTTP_STATUS.UNAUTHORIZED,
-        );
+        throw new AppError(MESSAGES.AUTH.TOKEN_REQUIRED, HTTP_STATUS.UNAUTHORIZED);
     }
 
     let payload;
@@ -30,17 +24,11 @@ const checkUser = async (req, _res, next) => {
     try {
         payload = jwt.verify(token, env.JWT_SECRET);
     } catch (_error) {
-        throw new AppError(
-            MESSAGES.AUTH.TOKEN_INVALID,
-            HTTP_STATUS.UNAUTHORIZED,
-        );
+        throw new AppError(MESSAGES.AUTH.TOKEN_INVALID, HTTP_STATUS.UNAUTHORIZED);
     }
 
     if (!isObjectId(payload.sub)) {
-        throw new AppError(
-            MESSAGES.AUTH.TOKEN_INVALID,
-            HTTP_STATUS.UNAUTHORIZED,
-        );
+        throw new AppError(MESSAGES.AUTH.TOKEN_INVALID, HTTP_STATUS.UNAUTHORIZED);
     }
 
     const user = await userRepository.findById(payload.sub, {
@@ -56,10 +44,7 @@ const checkUser = async (req, _res, next) => {
     }
 
     if (!user.emailVerifiedAt) {
-        throw new AppError(
-            MESSAGES.AUTH.EMAIL_VERIFICATION_REQUIRED,
-            HTTP_STATUS.FORBIDDEN,
-        );
+        throw new AppError(MESSAGES.AUTH.EMAIL_VERIFICATION_REQUIRED, HTTP_STATUS.FORBIDDEN);
     }
 
     req.user = user;

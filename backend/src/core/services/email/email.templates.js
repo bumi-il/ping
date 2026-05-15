@@ -35,7 +35,7 @@ const renderLayout = ({ title, body, buttonLabel, buttonUrl }) => {
     const bodyHtml = body
         .map(
             (paragraph) =>
-                `<p style="color: #334155; font-size: 15px; line-height: 1.6; margin: 0 0 16px;">${escapeHtml(paragraph)}</p>`,
+                `<p style="color: #334155; font-size: 15px; line-height: 1.6; margin: 0 0 16px;">${escapeHtml(paragraph)}</p>`
         )
         .join('');
 

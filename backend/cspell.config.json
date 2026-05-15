@@ -1,0 +1,29 @@
+{
+    "version": "0.2",
+    "language": "en",
+    "files": ["src/**/*.js", "*.json", "*.md"],
+    "ignorePaths": ["node_modules", "coverage", "dist", "build", "package-lock.json"],
+    "words": [
+        "AppError",
+        "AuthToken",
+        "bcryptjs",
+        "cors",
+        "dotenv",
+        "GroupInvite",
+        "GroupMember",
+        "jsconfig",
+        "jsonwebtoken",
+        "middlewares",
+        "MONGO",
+        "mongoose",
+        "morgan",
+        "nodemon",
+        "ObjectId",
+        "Pings",
+        "resend",
+        "Resend",
+        "ttl",
+        "utils",
+        "validates"
+    ]
+}

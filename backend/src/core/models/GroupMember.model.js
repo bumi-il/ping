@@ -37,7 +37,7 @@ const groupMemberSchema = new Schema(
     {
         timestamps: true,
         collection: 'group_member',
-    },
+    }
 );
 
 groupMemberSchema.index({ group: 1, user: 1 }, { unique: true });

@@ -20,7 +20,7 @@ class GroupRepository extends BaseRepository {
                 visibility: 'public',
                 status: 'active',
             },
-            options,
+            options
         );
     }
 

@@ -81,13 +81,10 @@ const requestLogSchema = new Schema(
     {
         timestamps: true,
         collection: 'request_logs',
-    },
+    }
 );
 
-requestLogSchema.index(
-    { createdAt: 1 },
-    { expireAfterSeconds: 60 * 60 * 24 * 30 },
-);
+requestLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 30 });
 requestLogSchema.index({ statusCode: 1, createdAt: -1 });
 requestLogSchema.index({ userId: 1, createdAt: -1 });
 requestLogSchema.index({ method: 1, path: 1, createdAt: -1 });

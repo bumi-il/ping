@@ -1,9 +1,5 @@
 import { env } from '#config/env.config.js';
-import {
-    sanitizeHeaders,
-    sanitizeValue,
-    saveRequestLog,
-} from './log.helpers.js';
+import { sanitizeHeaders, sanitizeValue, saveRequestLog } from './log.helpers.js';
 
 class LogService {
     requestLogger() {

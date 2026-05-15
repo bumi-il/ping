@@ -77,12 +77,7 @@ const sendGroupRoleUpdatedEmail = ({ to, displayName, groupName, role }) => {
     });
 };
 
-const sendGroupMemberJoinedEmail = ({
-    to,
-    displayName,
-    groupName,
-    memberName,
-}) => {
+const sendGroupMemberJoinedEmail = ({ to, displayName, groupName, memberName }) => {
     return sendTemplateEmail({
         to,
         template: emailTemplates.groupMemberJoined({

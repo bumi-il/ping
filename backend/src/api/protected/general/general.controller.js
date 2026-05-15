@@ -4,11 +4,7 @@ import generalService from './general.service.js';
 
 class GeneralController {
     getMe = (req, res) => {
-        return successResponse(
-            res,
-            HTTP_STATUS.OK,
-            generalService.getMe(req),
-        );
+        return successResponse(res, HTTP_STATUS.OK, generalService.getMe(req));
     };
 }
 

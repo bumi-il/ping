@@ -17,7 +17,7 @@ class GroupInviteRepository extends BaseRepository {
                 status: 'active',
                 expiresAt: { $gt: new Date() },
             },
-            options,
+            options
         );
     }
 

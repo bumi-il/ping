@@ -2,10 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import { env } from '#config/env.config.js';
-import {
-    errorHandler,
-    notFoundHandler,
-} from '#core/middlewares/errorHandler.middleware.js';
+import { errorHandler, notFoundHandler } from '#core/middlewares/errorHandler.middleware.js';
 import api from '#api/api.routes.js';
 import { connectDB } from '#config/db.config.js';
 import { NODE_ENVS } from '#core/constants/constants.js';

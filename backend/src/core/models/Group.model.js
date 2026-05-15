@@ -80,7 +80,7 @@ const groupSchema = new Schema(
     },
     {
         timestamps: true,
-    },
+    }
 );
 
 groupSchema.index({ slug: 1 }, { unique: true });

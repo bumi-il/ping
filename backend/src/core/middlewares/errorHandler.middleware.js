@@ -4,12 +4,7 @@ import AppError from '#core/utils/AppError.utils.js';
 import { errorResponse } from '#core/utils/response.utils.js';
 
 const notFoundHandler = (req, _res, next) => {
-    next(
-        new AppError(
-            MESSAGES.ROUTE.NOT_FOUND(req.originalUrl),
-            HTTP_STATUS.NOT_FOUND,
-        ),
-    );
+    next(new AppError(MESSAGES.ROUTE.NOT_FOUND(req.originalUrl), HTTP_STATUS.NOT_FOUND));
 };
 
 const errorHandler = (error, _req, res, _next) => {
@@ -17,11 +12,7 @@ const errorHandler = (error, _req, res, _next) => {
         return errorResponse(res, error.code, error.message, error.details);
     }
 
-    return errorResponse(
-        res,
-        HTTP_STATUS.INTERNAL_SERVER_ERROR,
-        MESSAGES.SERVER.INTERNAL_ERROR,
-    );
+    return errorResponse(res, HTTP_STATUS.INTERNAL_SERVER_ERROR, MESSAGES.SERVER.INTERNAL_ERROR);
 };
 
 export { notFoundHandler, errorHandler };

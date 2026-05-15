@@ -25,7 +25,7 @@ const themeSchema = new Schema(
     },
     {
         timestamps: true,
-    },
+    }
 );
 
 themeSchema.index({ slug: 1 }, { unique: true });

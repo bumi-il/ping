@@ -40,7 +40,7 @@ const groupInviteSchema = new Schema(
     {
         timestamps: true,
         collection: 'group_invite',
-    },
+    }
 );
 
 groupInviteSchema.index({ code: 1 }, { unique: true });

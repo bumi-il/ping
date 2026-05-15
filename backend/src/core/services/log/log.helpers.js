@@ -27,7 +27,7 @@ const getType = (value) => {
 };
 
 const compactValue = (value) => {
-    let serialized = '';
+    let serialized;
 
     try {
         serialized = JSON.stringify(value);

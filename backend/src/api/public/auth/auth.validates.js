@@ -17,23 +17,17 @@ const validateRegisterData = (data) => {
         typeof password !== 'string' ||
         !password.trim()
     ) {
-        throw new AppError(
-            MESSAGES.AUTH.REGISTER_FIELDS_REQUIRED,
-            HTTP_STATUS.BAD_REQUEST,
-        );
+        throw new AppError(MESSAGES.AUTH.REGISTER_FIELDS_REQUIRED, HTTP_STATUS.BAD_REQUEST);
     }
 
     if (!isEmail(email)) {
-        throw new AppError(
-            MESSAGES.AUTH.EMAIL_INVALID,
-            HTTP_STATUS.BAD_REQUEST,
-        );
+        throw new AppError(MESSAGES.AUTH.EMAIL_INVALID, HTTP_STATUS.BAD_REQUEST);
     }
 
     if (password.length < PASSWORD_MIN_LENGTH) {
         throw new AppError(
             MESSAGES.AUTH.PASSWORD_MIN_LENGTH(PASSWORD_MIN_LENGTH),
-            HTTP_STATUS.BAD_REQUEST,
+            HTTP_STATUS.BAD_REQUEST
         );
     }
 };
@@ -47,10 +41,7 @@ const validateBasicData = (data) => {
         typeof password !== 'string' ||
         !password.trim()
     ) {
-        throw new AppError(
-            MESSAGES.AUTH.CREDENTIALS_REQUIRED,
-            HTTP_STATUS.BAD_REQUEST,
-        );
+        throw new AppError(MESSAGES.AUTH.CREDENTIALS_REQUIRED, HTTP_STATUS.BAD_REQUEST);
     }
 };
 
@@ -66,17 +57,11 @@ const validateEmailData = (data) => {
     const { email } = data;
 
     if (typeof email !== 'string' || !email.trim()) {
-        throw new AppError(
-            MESSAGES.AUTH.EMAIL_REQUIRED,
-            HTTP_STATUS.BAD_REQUEST,
-        );
+        throw new AppError(MESSAGES.AUTH.EMAIL_REQUIRED, HTTP_STATUS.BAD_REQUEST);
     }
 
     if (!isEmail(email)) {
-        throw new AppError(
-            MESSAGES.AUTH.EMAIL_INVALID,
-            HTTP_STATUS.BAD_REQUEST,
-        );
+        throw new AppError(MESSAGES.AUTH.EMAIL_INVALID, HTTP_STATUS.BAD_REQUEST);
     }
 };
 
@@ -84,10 +69,7 @@ const validateTokenData = (data) => {
     const { token } = data;
 
     if (typeof token !== 'string' || !token.trim()) {
-        throw new AppError(
-            MESSAGES.AUTH.TOKEN_QUERY_REQUIRED,
-            HTTP_STATUS.BAD_REQUEST,
-        );
+        throw new AppError(MESSAGES.AUTH.TOKEN_QUERY_REQUIRED, HTTP_STATUS.BAD_REQUEST);
     }
 };
 
@@ -100,16 +82,13 @@ const validateResetPasswordData = (data) => {
         typeof password !== 'string' ||
         !password.trim()
     ) {
-        throw new AppError(
-            MESSAGES.AUTH.RESET_FIELDS_REQUIRED,
-            HTTP_STATUS.BAD_REQUEST,
-        );
+        throw new AppError(MESSAGES.AUTH.RESET_FIELDS_REQUIRED, HTTP_STATUS.BAD_REQUEST);
     }
 
     if (password.length < PASSWORD_MIN_LENGTH) {
         throw new AppError(
             MESSAGES.AUTH.PASSWORD_MIN_LENGTH(PASSWORD_MIN_LENGTH),
-            HTTP_STATUS.BAD_REQUEST,
+            HTTP_STATUS.BAD_REQUEST
         );
     }
 };

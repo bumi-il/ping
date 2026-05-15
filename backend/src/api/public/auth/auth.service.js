@@ -22,11 +22,7 @@ import {
     EMAIL_VERIFIED_CLIENT_URL_PARAMS,
 } from '#core/constants/auth.constants.js';
 import { USER_STATUSES } from '#core/constants/user.constants.js';
-import {
-    isEmail,
-    normalizeEmail,
-    normalizeUsername,
-} from '#core/utils/user.utils.js';
+import { isEmail, normalizeEmail, normalizeUsername } from '#core/utils/user.utils.js';
 import authValidates from './auth.validates.js';
 
 class AuthService {
@@ -41,18 +37,12 @@ class AuthService {
         });
 
         const normalizedUsername = normalizeUsername(username);
-        const existingUsername =
-            await userRepository.findByUsername(normalizedUsername);
+        const existingUsername = await userRepository.findByUsername(normalizedUsername);
         if (existingUsername) {
-            throw new AppError(
-                MESSAGES.AUTH.USERNAME_IN_USE,
-                HTTP_STATUS.CONFLICT,
-            );
+            throw new AppError(MESSAGES.AUTH.USERNAME_IN_USE, HTTP_STATUS.CONFLICT);
         }
         const deletedUsername =
-            await deletedUserRepository.findRestorableByUsername(
-                normalizedUsername,
-            );
+            await deletedUserRepository.findRestorableByUsername(normalizedUsername);
         if (deletedUsername) {
             this.throwDeletedUserRestoreAction('username');
         }
@@ -60,13 +50,9 @@ class AuthService {
         const normalizedEmail = normalizeEmail(email);
         const existingEmail = await userRepository.findByEmail(normalizedEmail);
         if (existingEmail) {
-            throw new AppError(
-                MESSAGES.AUTH.EMAIL_IN_USE,
-                HTTP_STATUS.CONFLICT,
-            );
+            throw new AppError(MESSAGES.AUTH.EMAIL_IN_USE, HTTP_STATUS.CONFLICT);
         }
-        const deletedEmail =
-            await deletedUserRepository.findRestorableByEmail(normalizedEmail);
+        const deletedEmail = await deletedUserRepository.findRestorableByEmail(normalizedEmail);
         if (deletedEmail) {
             this.throwDeletedUserRestoreAction('email');
         }
@@ -99,10 +85,7 @@ class AuthService {
             : await userRepository.findByUsername(credential);
 
         if (!user) {
-            throw new AppError(
-                MESSAGES.AUTH.CREDENTIALS_INVALID,
-                HTTP_STATUS.UNAUTHORIZED,
-            );
+            throw new AppError(MESSAGES.AUTH.CREDENTIALS_INVALID, HTTP_STATUS.UNAUTHORIZED);
         }
 
         if (user.status !== USER_STATUSES.ACTIVE) {
@@ -110,22 +93,13 @@ class AuthService {
         }
 
         if (!user.emailVerifiedAt) {
-            throw new AppError(
-                MESSAGES.AUTH.EMAIL_VERIFICATION_REQUIRED,
-                HTTP_STATUS.FORBIDDEN,
-            );
+            throw new AppError(MESSAGES.AUTH.EMAIL_VERIFICATION_REQUIRED, HTTP_STATUS.FORBIDDEN);
         }
 
-        const isPasswordValid = await bcrypt.compare(
-            password,
-            user.passwordHash,
-        );
+        const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
         if (!isPasswordValid) {
-            throw new AppError(
-                MESSAGES.AUTH.CREDENTIALS_INVALID,
-                HTTP_STATUS.UNAUTHORIZED,
-            );
+            throw new AppError(MESSAGES.AUTH.CREDENTIALS_INVALID, HTTP_STATUS.UNAUTHORIZED);
         }
 
         return this.createAuthPayload(user);
@@ -142,29 +116,18 @@ class AuthService {
             : await deletedUserRepository.findRestorableByUsername(credential);
 
         if (!deletedUser) {
-            throw new AppError(
-                MESSAGES.AUTH.CREDENTIALS_INVALID,
-                HTTP_STATUS.UNAUTHORIZED,
-            );
+            throw new AppError(MESSAGES.AUTH.CREDENTIALS_INVALID, HTTP_STATUS.UNAUTHORIZED);
         }
 
-        const isPasswordValid = await bcrypt.compare(
-            password,
-            deletedUser.passwordHash,
-        );
+        const isPasswordValid = await bcrypt.compare(password, deletedUser.passwordHash);
 
         if (!isPasswordValid) {
-            throw new AppError(
-                MESSAGES.AUTH.CREDENTIALS_INVALID,
-                HTTP_STATUS.UNAUTHORIZED,
-            );
+            throw new AppError(MESSAGES.AUTH.CREDENTIALS_INVALID, HTTP_STATUS.UNAUTHORIZED);
         }
 
         await this.ensureRestoredUserIdentifiersAreAvailable(deletedUser);
 
-        const user = await userRepository.create(
-            this.createRestoredUserData(deletedUser),
-        );
+        const user = await userRepository.create(this.createRestoredUserData(deletedUser));
 
         await deletedUserRepository.markRestoredById(deletedUser._id);
 
@@ -172,7 +135,7 @@ class AuthService {
             emailService.sendAccountRestoredEmail({
                 to: user.email,
                 displayName: user.displayName,
-            }),
+            })
         );
 
         return this.createAuthPayload(user);
@@ -185,7 +148,7 @@ class AuthService {
 
         const authToken = await this.findUsableAuthToken(
             token,
-            AUTH_TOKEN_TYPES.EMAIL_VERIFICATION,
+            AUTH_TOKEN_TYPES.EMAIL_VERIFICATION
         );
 
         const user = await userRepository.findById(authToken.user);
@@ -202,16 +165,13 @@ class AuthService {
                 emailService.sendWelcomeEmail({
                     to: user.email,
                     displayName: user.displayName,
-                }),
+                })
             );
         }
 
         await authTokenRepository.markUsedById(authToken._id);
 
-        return createClientUrl(
-            EMAIL_VERIFIED_CLIENT_URL,
-            EMAIL_VERIFIED_CLIENT_URL_PARAMS,
-        );
+        return createClientUrl(EMAIL_VERIFIED_CLIENT_URL, EMAIL_VERIFIED_CLIENT_URL_PARAMS);
     }
 
     async resendVerification(data = {}) {
@@ -220,11 +180,7 @@ class AuthService {
         authValidates.validateEmailData({ email });
 
         const user = await userRepository.findByEmail(normalizeEmail(email));
-        if (
-            user &&
-            !user.emailVerifiedAt &&
-            user.status === USER_STATUSES.ACTIVE
-        ) {
+        if (user && !user.emailVerifiedAt && user.status === USER_STATUSES.ACTIVE) {
             await this.sendVerificationEmail(user);
         }
 
@@ -237,11 +193,7 @@ class AuthService {
         authValidates.validateEmailData({ email });
 
         const user = await userRepository.findByEmail(normalizeEmail(email));
-        if (
-            user &&
-            user.emailVerifiedAt &&
-            user.status === USER_STATUSES.ACTIVE
-        ) {
+        if (user && user.emailVerifiedAt && user.status === USER_STATUSES.ACTIVE) {
             await this.sendPasswordResetEmail(user);
         }
 
@@ -253,10 +205,7 @@ class AuthService {
 
         authValidates.validateResetPasswordData({ token, password });
 
-        const authToken = await this.findUsableAuthToken(
-            token,
-            AUTH_TOKEN_TYPES.PASSWORD_RESET,
-        );
+        const authToken = await this.findUsableAuthToken(token, AUTH_TOKEN_TYPES.PASSWORD_RESET);
 
         const user = await userRepository.findById(authToken.user);
         if (!user) {
@@ -264,10 +213,7 @@ class AuthService {
         }
 
         if (user.status !== USER_STATUSES.ACTIVE || !user.emailVerifiedAt) {
-            throw new AppError(
-                MESSAGES.AUTH.AUTH_TOKEN_INVALID,
-                HTTP_STATUS.BAD_REQUEST,
-            );
+            throw new AppError(MESSAGES.AUTH.AUTH_TOKEN_INVALID, HTTP_STATUS.BAD_REQUEST);
         }
 
         const passwordHash = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
@@ -313,7 +259,7 @@ class AuthService {
                 to: user.email,
                 displayName: user.displayName,
                 verificationUrl,
-            }),
+            })
         );
     }
 
@@ -338,7 +284,7 @@ class AuthService {
                 to: user.email,
                 displayName: user.displayName,
                 resetUrl,
-            }),
+            })
         );
     }
 
@@ -362,10 +308,7 @@ class AuthService {
         });
 
         if (!authToken) {
-            throw new AppError(
-                MESSAGES.AUTH.AUTH_TOKEN_INVALID,
-                HTTP_STATUS.BAD_REQUEST,
-            );
+            throw new AppError(MESSAGES.AUTH.AUTH_TOKEN_INVALID, HTTP_STATUS.BAD_REQUEST);
         }
 
         return authToken;
@@ -379,24 +322,14 @@ class AuthService {
     }
 
     async ensureRestoredUserIdentifiersAreAvailable(deletedUser) {
-        const existingUsername = await userRepository.findByUsername(
-            deletedUser.username,
-        );
+        const existingUsername = await userRepository.findByUsername(deletedUser.username);
         if (existingUsername) {
-            throw new AppError(
-                MESSAGES.AUTH.USERNAME_IN_USE,
-                HTTP_STATUS.CONFLICT,
-            );
+            throw new AppError(MESSAGES.AUTH.USERNAME_IN_USE, HTTP_STATUS.CONFLICT);
         }
 
-        const existingEmail = await userRepository.findByEmail(
-            deletedUser.email,
-        );
+        const existingEmail = await userRepository.findByEmail(deletedUser.email);
         if (existingEmail) {
-            throw new AppError(
-                MESSAGES.AUTH.EMAIL_IN_USE,
-                HTTP_STATUS.CONFLICT,
-            );
+            throw new AppError(MESSAGES.AUTH.EMAIL_IN_USE, HTTP_STATUS.CONFLICT);
         }
     }
 
@@ -408,8 +341,7 @@ class AuthService {
                 ? deletedUser.dataToRestore
                 : {};
         const displayName =
-            typeof restoreData.displayName === 'string' &&
-            restoreData.displayName.trim()
+            typeof restoreData.displayName === 'string' && restoreData.displayName.trim()
                 ? restoreData.displayName.trim()
                 : deletedUser.username;
 
@@ -445,25 +377,17 @@ class AuthService {
 
     signToken(user) {
         // TODO: Learn jwt params - https://www.npmjs.com/package/jsonwebtoken
-        return jwt.sign(
-            { sub: user._id.toString() },
-            env.JWT_SECRET,
-            JWT_SIGN_OPTIONS,
-        );
+        return jwt.sign({ sub: user._id.toString() }, env.JWT_SECRET, JWT_SIGN_OPTIONS);
     }
 
     throwDeletedUserRestoreAction(matchedBy) {
-        throw new AppError(
-            MESSAGES.AUTH.DELETED_USER_RESTORE_AVAILABLE,
-            HTTP_STATUS.CONFLICT,
-            {
-                action: {
-                    type: 'restore_deleted_user',
-                    question: MESSAGES.AUTH.DELETED_USER_RESTORE_QUESTION,
-                    matchedBy,
-                },
+        throw new AppError(MESSAGES.AUTH.DELETED_USER_RESTORE_AVAILABLE, HTTP_STATUS.CONFLICT, {
+            action: {
+                type: 'restore_deleted_user',
+                question: MESSAGES.AUTH.DELETED_USER_RESTORE_QUESTION,
+                matchedBy,
             },
-        );
+        });
     }
 }
 
