@@ -1,4 +1,5 @@
 import { model, Schema } from 'mongoose';
+import { GROUP_INVITES_STATUSES } from '#core/constants/groupInvite.constants.js';
 
 const groupInviteSchema = new Schema(
     {
@@ -33,8 +34,8 @@ const groupInviteSchema = new Schema(
         },
         status: {
             type: String,
-            enum: ['active', 'revoked', 'expired'],
-            default: 'active',
+            enum: Object.values(GROUP_INVITES_STATUSES),
+            default: GROUP_INVITES_STATUSES.ACTIVE,
         },
     },
     {

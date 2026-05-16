@@ -1,4 +1,5 @@
 import { model, Schema } from 'mongoose';
+import { USER_STATUSES } from '#core/constants/user.constants.js';
 
 const userSchema = new Schema(
     {
@@ -35,8 +36,8 @@ const userSchema = new Schema(
         },
         status: {
             type: String,
-            enum: ['active', 'disabled'],
-            default: 'active',
+            enum: Object.values(USER_STATUSES),
+            default: USER_STATUSES.ACTIVE,
         },
         emailVerifiedAt: {
             type: Date,

@@ -16,7 +16,7 @@ const env = {
     APP_EMAIL: process.env.APP_EMAIL,
 };
 
-const REQUIRED_ENVS = ['PORT', 'MONGO_URI', 'JWT_SECRET'];
+const REQUIRED_ENVS = ['PORT', 'MONGO_URI', 'JWT_SECRET', 'CLIENT_ORIGIN'];
 
 REQUIRED_ENVS.forEach((key) => {
     if (!env[key]) {

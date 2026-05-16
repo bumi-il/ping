@@ -1,4 +1,8 @@
 import { model, Schema } from 'mongoose';
+import {
+    GROUP_MEMBER_ROLES,
+    GROUP_MEMBER_STATUSES,
+} from '#core/constants/groupMember.constants.js';
 
 const groupMemberSchema = new Schema(
     {
@@ -15,12 +19,12 @@ const groupMemberSchema = new Schema(
         role: {
             type: String,
             required: true,
-            enum: ['owner', 'admin', 'member'],
-            default: 'member',
+            enum: Object.values(GROUP_MEMBER_ROLES),
+            default: GROUP_MEMBER_ROLES.MEMBER,
         },
         status: {
             type: String,
-            enum: ['active', 'pending', 'invited', 'blocked'],
+            enum: Object.values(GROUP_MEMBER_STATUSES),
             required: true,
         },
         invitedBy: {

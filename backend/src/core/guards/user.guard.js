@@ -1,11 +1,23 @@
-import jwt from 'jsonwebtoken';
-import { env } from '#config/env.config.js';
+import { AUTH_CONTEXT_FAILURES } from '#core/constants/auth.constants.js';
 import { HTTP_STATUS } from '#core/constants/httpStatus.constants.js';
 import { MESSAGES } from '#core/constants/messages.constants.js';
-import { USER_STATUSES } from '#core/constants/user.constants.js';
-import userRepository from '#core/repositories/user.repository.js';
+import authContextService from '#core/services/auth/authContext.service.js';
 import AppError from '#core/utils/AppError.utils.js';
-import { isObjectId } from '#core/utils/mongoose.utils.js';
+
+const AUTH_CONTEXT_ERRORS = {
+    [AUTH_CONTEXT_FAILURES.USER_NOT_FOUND]: {
+        message: MESSAGES.USER.NOT_FOUND,
+        status: HTTP_STATUS.UNAUTHORIZED,
+    },
+    [AUTH_CONTEXT_FAILURES.USER_DISABLED]: {
+        message: MESSAGES.USER.DISABLED,
+        status: HTTP_STATUS.FORBIDDEN,
+    },
+    [AUTH_CONTEXT_FAILURES.EMAIL_VERIFICATION_REQUIRED]: {
+        message: MESSAGES.AUTH.EMAIL_VERIFICATION_REQUIRED,
+        status: HTTP_STATUS.FORBIDDEN,
+    },
+};
 
 const checkUser = async (req, _res, next) => {
     const authorizationHeader = req.headers.authorization;
@@ -19,32 +31,14 @@ const checkUser = async (req, _res, next) => {
         throw new AppError(MESSAGES.AUTH.TOKEN_REQUIRED, HTTP_STATUS.UNAUTHORIZED);
     }
 
-    let payload;
-
-    try {
-        payload = jwt.verify(token, env.JWT_SECRET);
-    } catch (_error) {
-        throw new AppError(MESSAGES.AUTH.TOKEN_INVALID, HTTP_STATUS.UNAUTHORIZED);
-    }
-
-    if (!isObjectId(payload.sub)) {
-        throw new AppError(MESSAGES.AUTH.TOKEN_INVALID, HTTP_STATUS.UNAUTHORIZED);
-    }
-
-    const user = await userRepository.findById(payload.sub, {
-        select: '-passwordHash -__v',
-    });
-
+    const { user, failure } = await authContextService.authenticateToken(token);
     if (!user) {
-        throw new AppError(MESSAGES.USER.NOT_FOUND, HTTP_STATUS.UNAUTHORIZED);
-    }
+        const error = AUTH_CONTEXT_ERRORS[failure] || {
+            message: MESSAGES.AUTH.TOKEN_INVALID,
+            status: HTTP_STATUS.UNAUTHORIZED,
+        };
 
-    if (user.status !== USER_STATUSES.ACTIVE) {
-        throw new AppError(MESSAGES.USER.DISABLED, HTTP_STATUS.FORBIDDEN);
-    }
-
-    if (!user.emailVerifiedAt) {
-        throw new AppError(MESSAGES.AUTH.EMAIL_VERIFICATION_REQUIRED, HTTP_STATUS.FORBIDDEN);
+        throw new AppError(error.message, error.status);
     }
 
     req.user = user;

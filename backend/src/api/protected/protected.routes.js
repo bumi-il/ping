@@ -10,6 +10,6 @@ protectedRouter.use(checkUser);
 
 protectedRouter.use(generalRouter);
 protectedRouter.use('/admin', adminRouter);
-protectedRouter.use('/group', groupRouter);
+protectedRouter.use('/groups/:groupId', groupRouter);
 
 export default protectedRouter;

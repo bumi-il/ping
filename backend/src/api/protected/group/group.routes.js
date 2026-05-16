@@ -4,7 +4,7 @@ import groupController from './group.controller.js';
 import { checkGroupMember } from '#core/guards/groupMember.guard.js';
 import groupAdminRouter from './admin/groupAdmin.routes.js';
 
-const groupRouter = Router();
+const groupRouter = Router({ mergeParams: true });
 
 groupRouter.use(checkGroup);
 groupRouter.use(checkGroupMember);

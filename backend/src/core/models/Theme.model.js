@@ -1,4 +1,5 @@
 import { model, Schema } from 'mongoose';
+import { THEME_MODES } from '#core/constants/theme.constants.js';
 
 const themeSchema = new Schema(
     {
@@ -14,8 +15,8 @@ const themeSchema = new Schema(
         },
         mode: {
             type: String,
-            enum: ['light', 'dark', 'system'],
-            default: 'system',
+            enum: Object.values(THEME_MODES),
+            default: THEME_MODES.SYSTEM,
         },
         colors: {
             type: Map,

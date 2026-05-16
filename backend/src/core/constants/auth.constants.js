@@ -19,7 +19,15 @@ const AUTH_TOKEN_TYPES = {
     PASSWORD_RESET: 'password_reset',
 };
 
+const AUTH_CONTEXT_FAILURES = {
+    TOKEN_INVALID: 'token_invalid',
+    USER_NOT_FOUND: 'user_not_found',
+    USER_DISABLED: 'user_disabled',
+    EMAIL_VERIFICATION_REQUIRED: 'email_verification_required',
+};
+
 export {
+    AUTH_CONTEXT_FAILURES,
     EMAIL_VERIFIED_CLIENT_URL,
     EMAIL_VERIFIED_CLIENT_URL_PARAMS,
     RESET_PASSWORD_CLIENT_URL,

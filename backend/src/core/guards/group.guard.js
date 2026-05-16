@@ -3,10 +3,10 @@ import { MESSAGES } from '#core/constants/messages.constants.js';
 import groupRepository from '#core/repositories/group.repository.js';
 import AppError from '#core/utils/AppError.utils.js';
 import { isObjectId } from '#core/utils/mongoose.utils.js';
-import { GROUP_HEADER_KEY, GROUP_STATUSES } from '#core/constants/group.constants.js';
+import { GROUP_STATUSES } from '#core/constants/group.constants.js';
 
 const checkGroup = async (req, _res, next) => {
-    const groupId = req.headers[GROUP_HEADER_KEY];
+    const { groupId } = req.params;
 
     if (!groupId) {
         throw new AppError(MESSAGES.GROUP.REQUIRED, HTTP_STATUS.BAD_REQUEST);

@@ -10,7 +10,7 @@ const authTokenSchema = new Schema(
         },
         type: {
             type: String,
-            enum: Object.values(AUTH_TOKEN_TYPES), // TODO: Make like this in all models
+            enum: Object.values(AUTH_TOKEN_TYPES),
             required: true,
         },
         tokenHash: {

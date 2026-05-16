@@ -1,4 +1,9 @@
 import { model, Schema } from 'mongoose';
+import {
+    GROUP_JOIN_POLICIES,
+    GROUP_STATUSES,
+    GROUP_VISIBILITIES,
+} from '#core/constants/group.constants.js';
 
 const groupSchema = new Schema(
     {
@@ -56,13 +61,13 @@ const groupSchema = new Schema(
         // Group settings
         visibility: {
             type: String,
-            enum: ['public', 'private'],
-            default: 'private',
+            enum: Object.values(GROUP_VISIBILITIES),
+            default: GROUP_VISIBILITIES.PRIVATE,
         },
         joinPolicy: {
             type: String,
-            enum: ['open', 'approval_required', 'invite_only'],
-            default: 'invite_only',
+            enum: Object.values(GROUP_JOIN_POLICIES),
+            default: GROUP_JOIN_POLICIES.INVITE_ONLY,
         },
         allowMembersToInvite: {
             type: Boolean,
@@ -74,8 +79,8 @@ const groupSchema = new Schema(
         },
         status: {
             type: String,
-            enum: ['active', 'disabled'],
-            default: 'active',
+            enum: Object.values(GROUP_STATUSES),
+            default: GROUP_STATUSES.ACTIVE,
         },
     },
     {
