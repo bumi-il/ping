@@ -7,6 +7,10 @@ const deletedUserSchema = new Schema(
             required: true,
             trim: true,
         },
+        phoneNumber: {
+            type: String,
+            trim: true,
+        },
         email: {
             type: String,
             required: true,
@@ -68,6 +72,7 @@ deletedUserSchema.pre(
 );
 
 deletedUserSchema.index({ deletedAt: 1 });
+deletedUserSchema.index({ phoneNumber: 1, restored: 1, deletedAt: -1 });
 deletedUserSchema.index({ username: 1, restored: 1, deletedAt: -1 });
 deletedUserSchema.index({ email: 1, restored: 1, deletedAt: -1 });
 

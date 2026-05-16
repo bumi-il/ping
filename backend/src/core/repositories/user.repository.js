@@ -13,6 +13,10 @@ class UserRepository extends BaseRepository {
     findByEmail(email, options = {}) {
         return this.findOne({ email }, options);
     }
+
+    findByPhoneNumber(phoneNumber, options = {}) {
+        return this.findOne({ phoneNumber }, options);
+    }
 }
 
 export default new UserRepository();

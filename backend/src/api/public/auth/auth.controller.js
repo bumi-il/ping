@@ -13,6 +13,16 @@ class AuthController {
         return successResponse(res, HTTP_STATUS.OK, authPayload);
     };
 
+    startSms = async (req, res) => {
+        const result = await authService.startSms(req.body, req);
+        return successResponse(res, HTTP_STATUS.OK, result);
+    };
+
+    verifySms = async (req, res) => {
+        const authPayload = await authService.verifySms(req.body, req);
+        return successResponse(res, HTTP_STATUS.OK, authPayload);
+    };
+
     restore = async (req, res) => {
         const authPayload = await authService.restore(req.body);
         return successResponse(res, HTTP_STATUS.CREATED, authPayload);

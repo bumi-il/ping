@@ -39,7 +39,7 @@ const authenticateSocket = async (socket, next) => {
             select: '-passwordHash -__v',
         });
 
-        if (!user || user.status !== USER_STATUSES.ACTIVE || !user.emailVerifiedAt) {
+        if (!user || user.status !== USER_STATUSES.ACTIVE) {
             return next(new Error(SOCKET_AUTH_ERROR));
         }
 

@@ -2,12 +2,14 @@ import { PASSWORD_MIN_LENGTH } from '#core/constants/auth.constants.js';
 import { HTTP_STATUS } from '#core/constants/httpStatus.constants.js';
 import { MESSAGES } from '#core/constants/messages.constants.js';
 import AppError from '#core/utils/AppError.utils.js';
-import { isEmail } from '#core/utils/user.utils.js';
+import { isEmail, isPhoneNumber } from '#core/utils/user.utils.js';
 
 const validateRegisterData = (data) => {
-    const { username, displayName, email, password } = data;
+    const { phoneNumber, username, displayName, email, password } = data;
 
     if (
+        typeof phoneNumber !== 'string' ||
+        !phoneNumber.trim() ||
         typeof username !== 'string' ||
         !username.trim() ||
         typeof displayName !== 'string' ||
@@ -20,6 +22,10 @@ const validateRegisterData = (data) => {
         throw new AppError(MESSAGES.AUTH.REGISTER_FIELDS_REQUIRED, HTTP_STATUS.BAD_REQUEST);
     }
 
+    if (!isPhoneNumber(phoneNumber)) {
+        throw new AppError(MESSAGES.AUTH.PHONE_INVALID, HTTP_STATUS.BAD_REQUEST);
+    }
+
     if (!isEmail(email)) {
         throw new AppError(MESSAGES.AUTH.EMAIL_INVALID, HTTP_STATUS.BAD_REQUEST);
     }
@@ -29,6 +35,41 @@ const validateRegisterData = (data) => {
             MESSAGES.AUTH.PASSWORD_MIN_LENGTH(PASSWORD_MIN_LENGTH),
             HTTP_STATUS.BAD_REQUEST
         );
+    }
+};
+
+const validateSmsStartData = (data) => {
+    const { phoneNumber } = data;
+
+    if (typeof phoneNumber !== 'string' || !phoneNumber.trim()) {
+        throw new AppError(MESSAGES.AUTH.PHONE_REQUIRED, HTTP_STATUS.BAD_REQUEST);
+    }
+
+    if (!isPhoneNumber(phoneNumber)) {
+        throw new AppError(MESSAGES.AUTH.PHONE_INVALID, HTTP_STATUS.BAD_REQUEST);
+    }
+};
+
+const validateSmsVerifyData = (data) => {
+    const { phoneNumber, code, device } = data;
+
+    validateSmsStartData({ phoneNumber });
+
+    if (typeof code !== 'string' || !code.trim()) {
+        throw new AppError(MESSAGES.AUTH.SMS_CODE_REQUIRED, HTTP_STATUS.BAD_REQUEST);
+    }
+
+    if (!device || typeof device !== 'object' || Array.isArray(device)) {
+        throw new AppError(MESSAGES.AUTH.DEVICE_REQUIRED, HTTP_STATUS.BAD_REQUEST);
+    }
+
+    if (
+        typeof device.deviceId !== 'string' ||
+        !device.deviceId.trim() ||
+        typeof device.platform !== 'string' ||
+        !device.platform.trim()
+    ) {
+        throw new AppError(MESSAGES.AUTH.DEVICE_FIELDS_REQUIRED, HTTP_STATUS.BAD_REQUEST);
     }
 };
 
@@ -97,6 +138,8 @@ export default {
     validateRegisterData,
     validateLoginData,
     validateRestoreData,
+    validateSmsStartData,
+    validateSmsVerifyData,
     validateEmailData,
     validateTokenData,
     validateResetPasswordData,

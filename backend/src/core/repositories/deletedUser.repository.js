@@ -15,12 +15,20 @@ class DeletedUserRepository extends BaseRepository {
         return this.findOne({ email }, options);
     }
 
+    findByPhoneNumber(phoneNumber, options = {}) {
+        return this.findOne({ phoneNumber }, options);
+    }
+
     findRestorableByUsername(username, options = {}) {
         return this.findRestorable({ username }, options);
     }
 
     findRestorableByEmail(email, options = {}) {
         return this.findRestorable({ email }, options);
+    }
+
+    findRestorableByPhoneNumber(phoneNumber, options = {}) {
+        return this.findRestorable({ phoneNumber }, options);
     }
 
     findRestorable(filter = {}, options = {}) {

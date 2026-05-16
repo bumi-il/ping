@@ -43,10 +43,6 @@ const checkUser = async (req, _res, next) => {
         throw new AppError(MESSAGES.USER.DISABLED, HTTP_STATUS.FORBIDDEN);
     }
 
-    if (!user.emailVerifiedAt) {
-        throw new AppError(MESSAGES.AUTH.EMAIL_VERIFICATION_REQUIRED, HTTP_STATUS.FORBIDDEN);
-    }
-
     req.user = user;
 
     next();

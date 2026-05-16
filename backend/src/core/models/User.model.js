@@ -3,24 +3,26 @@ import { model, Schema } from 'mongoose';
 const userSchema = new Schema(
     {
         // Basic required information
-        username: {
+        phoneNumber: {
             type: String,
             required: true,
+            trim: true,
+        },
+        username: {
+            type: String,
             trim: true,
         },
         displayName: {
             type: String,
-            required: true,
             trim: true,
+            default: '',
         },
         email: {
             type: String,
-            required: true,
             trim: true,
         },
         passwordHash: {
             type: String,
-            required: true,
             trim: true,
         },
 
@@ -39,6 +41,10 @@ const userSchema = new Schema(
             default: 'active',
         },
         emailVerifiedAt: {
+            type: Date,
+            default: null,
+        },
+        phoneVerifiedAt: {
             type: Date,
             default: null,
         },
@@ -65,8 +71,9 @@ const userSchema = new Schema(
     }
 );
 
-userSchema.index({ username: 1 }, { unique: true });
-userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ phoneNumber: 1 }, { unique: true });
+userSchema.index({ username: 1 }, { unique: true, sparse: true });
+userSchema.index({ email: 1 }, { unique: true, sparse: true });
 userSchema.index({ status: 1 });
 
 export const User = model('User', userSchema);
