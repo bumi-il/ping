@@ -1,6 +1,6 @@
-import { createGroupRoom } from './websocket.helpers.js';
+import { createGroupRoom } from './socket.helpers.js';
 
-class WebsocketService {
+class SocketService {
     #io = null;
 
     setIO(socketServer) {
@@ -21,4 +21,4 @@ class WebsocketService {
     }
 }
 
-export default new WebsocketService();
+export default new SocketService();

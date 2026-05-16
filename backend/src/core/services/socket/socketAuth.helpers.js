@@ -2,7 +2,7 @@ import { env } from '#config/env.config.js';
 import jwt from 'jsonwebtoken';
 import userRepository from '#core/repositories/user.repository.js';
 import { USER_STATUSES } from '#core/constants/user.constants.js';
-import { SOCKET_AUTH_ERROR } from '#core/constants/websocket.constants.js';
+import { SOCKET_AUTH_ERROR } from '#core/constants/socket.constants.js';
 import { isObjectId } from '#core/utils/mongoose.utils.js';
 
 const getSocketToken = (socket) => {
@@ -44,6 +44,7 @@ const authenticateSocket = async (socket, next) => {
         }
 
         socket.user = user;
+
         return next();
     } catch (_error) {
         return next(new Error(SOCKET_AUTH_ERROR));

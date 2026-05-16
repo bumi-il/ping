@@ -59,7 +59,7 @@ const createGroupRoom = (groupId) => {
     return `group:${groupId}`;
 };
 
-const setupSocketListeners = (socket) => {
+const createSocketListeners = (socket) => {
     socket.on('group:join', (payload, acknowledge) => {
         joinGroup(socket, payload, acknowledge).catch((_error) => {
             acknowledgeError(acknowledge, MESSAGES.SERVER.INTERNAL_ERROR);
@@ -73,4 +73,4 @@ const setupSocketListeners = (socket) => {
     });
 };
 
-export { setupSocketListeners, createGroupRoom };
+export { createSocketListeners, createGroupRoom };

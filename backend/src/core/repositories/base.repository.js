@@ -28,7 +28,7 @@ class BaseRepository {
 
     updateById(id, data, options = {}) {
         return this.model.findByIdAndUpdate(id, data, {
-            new: true,
+            returnDocument: 'after',
             runValidators: true,
             ...options,
         });
@@ -36,7 +36,7 @@ class BaseRepository {
 
     updateOne(filter, data, options = {}) {
         return this.model.findOneAndUpdate(filter, data, {
-            new: true,
+            returnDocument: 'after',
             runValidators: true,
             ...options,
         });
